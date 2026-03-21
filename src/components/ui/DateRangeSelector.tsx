@@ -11,19 +11,14 @@ const ranges = [
 ];
 
 export function DateRangeSelector() {
-  const { days, setDays, fetchData, loading } = useOuraData();
-
-  const handleChange = (d: number) => {
-    setDays(d);
-    setTimeout(() => fetchData(), 0);
-  };
+  const { days, setDays, loading } = useOuraData();
 
   return (
     <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-white/5 rounded-xl">
       {ranges.map(({ label, days: d }) => (
         <button
           key={d}
-          onClick={() => handleChange(d)}
+          onClick={() => setDays(d)}
           disabled={loading}
           className={cn(
             "px-3 py-1.5 text-xs font-semibold rounded-lg transition-all duration-200",

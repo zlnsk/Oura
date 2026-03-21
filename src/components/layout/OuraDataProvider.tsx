@@ -126,6 +126,15 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [days]);
 
+  // Re-fetch when days changes
+  const prevDaysRef = useRef(days);
+  useEffect(() => {
+    if (prevDaysRef.current !== days) {
+      prevDaysRef.current = days;
+      fetchData();
+    }
+  }, [days, fetchData]);
+
   return (
     <OuraDataContext.Provider
       value={{ data, loading, error, days, setDays, fetchData, lastUpdated }}
