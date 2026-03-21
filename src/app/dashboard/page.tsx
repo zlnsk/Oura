@@ -309,7 +309,7 @@ function TodayProgress({
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="w-4 h-4 text-amber-400" />
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Yesterday&apos;s Activity
+                  Today&apos;s Activity
                 </h3>
               </div>
 
@@ -479,9 +479,8 @@ export default function DashboardPage() {
   // Only use long_sleep periods (skip naps/rest)
   const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === yesterday && s.type === "long_sleep");
   const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.find((r) => r.day === yesterday);
-  // Activity: Oura API pre-populates today with stale projected values.
-  // Use yesterday's completed data which is accurate.
-  const todayActivity = data?.activity?.find((a) => a.day === yesterday);
+  // Activity: strictly today only
+  const todayActivity = data?.activity?.find((a) => a.day === today);
 
   const sleepScores = data?.sleep?.map((s) => s.score).filter(Boolean) || [];
   const avgSteps = average(data?.activity?.map((a) => a.steps) || []);
@@ -560,7 +559,7 @@ export default function DashboardPage() {
               icon={Footprints}
               color="#10b981"
               trend={trend(data.activity.map((a) => a.steps))}
-              trendLabel={`Yesterday ${todayActivity?.steps?.toLocaleString() || "--"}`}
+              trendLabel={`Today ${todayActivity?.steps?.toLocaleString() || "--"}`}
               trendPositive={trend(data.activity.map((a) => a.steps)) === "up"}
             />
             <StatCard

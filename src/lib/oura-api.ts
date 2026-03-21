@@ -39,9 +39,12 @@ export function getDateRange(days: number) {
   const end = new Date();
   const start = new Date();
   start.setDate(start.getDate() - days);
+  // Oura API end_date is exclusive, so add 1 day to include today
+  const endInclusive = new Date(end);
+  endInclusive.setDate(endInclusive.getDate() + 1);
   return {
     start_date: start.toISOString().split("T")[0],
-    end_date: end.toISOString().split("T")[0],
+    end_date: endInclusive.toISOString().split("T")[0],
   };
 }
 

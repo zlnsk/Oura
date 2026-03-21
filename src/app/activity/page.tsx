@@ -22,6 +22,11 @@ import {
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
 
+function getToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function ActivityPage() {
   const { data, loading, fetchData } = useOuraData();
 
@@ -30,7 +35,8 @@ export default function ActivityPage() {
   }, [data, fetchData]);
 
   const activities = data?.activity || [];
-  const latest = activities[activities.length - 1];
+  const today = getToday();
+  const latest = activities.find((a) => a.day === today) || activities[activities.length - 1];
 
   const avgSteps = average(activities.map((a) => a.steps));
   const avgCalories = average(activities.map((a) => a.total_calories));
