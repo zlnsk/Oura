@@ -30,9 +30,18 @@ import {
 import { average, trend, formatDuration } from "@/lib/utils";
 import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
 
+function getDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
 function getToday(): string {
+  return getDateStr(new Date());
+}
+
+function getYesterday(): string {
   const d = new Date();
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  d.setDate(d.getDate() - 1);
+  return getDateStr(d);
 }
 
 function formatTime(isoString: string): string {
@@ -464,11 +473,12 @@ export default function DashboardPage() {
   }, [fetchData]);
 
   const today = getToday();
-  // Use today's data if available, otherwise fall back to latest
-  const todaySleep = data?.sleep?.find((s) => s.day === today) || data?.sleep?.[data.sleep.length - 1];
-  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today) || data?.sleepPeriods?.[data.sleepPeriods.length - 1];
-  const todayActivity = data?.activity?.find((a) => a.day === today) || data?.activity?.[data.activity.length - 1];
-  const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.[data.readiness.length - 1];
+  const yesterday = getYesterday();
+  // Strictly match today's data — sleep/readiness also check yesterday (last night)
+  const todaySleep = data?.sleep?.find((s) => s.day === today) || data?.sleep?.find((s) => s.day === yesterday);
+  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today) || data?.sleepPeriods?.find((s) => s.day === yesterday);
+  const todayActivity = data?.activity?.find((a) => a.day === today);
+  const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.find((r) => r.day === yesterday);
 
   const sleepScores = data?.sleep?.map((s) => s.score).filter(Boolean) || [];
   const avgSteps = average(data?.activity?.map((a) => a.steps) || []);
