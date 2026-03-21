@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -14,15 +15,21 @@ import { MultiLineChart } from "@/components/charts/MultiLineChart";
 import { Zap, Thermometer, Heart, Wind, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
 
+function getToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function ReadinessPage() {
   const { data, loading, fetchData } = useOuraData();
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   useEffect(() => {
     if (!data) fetchData();
   }, [data, fetchData]);
 
   const readiness = data?.readiness || [];
-  const latest = readiness[readiness.length - 1];
+  const latest = readiness.find((r) => r.day === selectedDate) || readiness[readiness.length - 1];
 
   return (
     <DashboardShell>
@@ -33,7 +40,7 @@ export default function ReadinessPage() {
         iconColor="#f59e0b"
         action={
           <div className="flex items-center gap-3">
-            <DateRangeSelector />
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -109,7 +116,11 @@ export default function ReadinessPage() {
             />
           </div>
 
-          {/* Score trend */}
+          {/* Trends */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
+            <DateRangeSelector />
+          </div>
           <ScoreLineChart
             data={readiness}
             title="Readiness Score Trend"

@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
@@ -19,8 +20,14 @@ import {
 } from "lucide-react";
 import { average, formatDuration } from "@/lib/utils";
 
+function getToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function WorkoutsPage() {
   const { data, loading, fetchData } = useOuraData();
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   useEffect(() => {
     if (!data) fetchData();
@@ -56,7 +63,7 @@ export default function WorkoutsPage() {
         iconColor="#f43f5e"
         action={
           <div className="flex items-center gap-3">
-            <DateRangeSelector />
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -97,6 +104,12 @@ export default function WorkoutsPage() {
               icon={MapPin}
               color="#10b981"
             />
+          </div>
+
+          {/* Trends */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
+            <DateRangeSelector />
           </div>
 
           {/* Calories chart */}

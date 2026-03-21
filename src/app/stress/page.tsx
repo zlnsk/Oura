@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
@@ -14,8 +15,14 @@ import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { Brain, Shield, Gauge, Wind, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
 
+function getToday(): string {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export default function StressPage() {
   const { data, loading, fetchData } = useOuraData();
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   useEffect(() => {
     if (!data) fetchData();
@@ -27,7 +34,7 @@ export default function StressPage() {
   const cardiovascularAge = data?.cardiovascularAge || [];
   const vo2Max = data?.vo2Max || [];
 
-  const latest = stress[stress.length - 1];
+  const latest = stress.find((s) => s.day === selectedDate) || stress[stress.length - 1];
 
   return (
     <DashboardShell>
@@ -38,7 +45,7 @@ export default function StressPage() {
         iconColor="#8b5cf6"
         action={
           <div className="flex items-center gap-3">
-            <DateRangeSelector />
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -88,6 +95,12 @@ export default function StressPage() {
               icon={Gauge}
               color="#f43f5e"
             />
+          </div>
+
+          {/* Trends */}
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
+            <DateRangeSelector />
           </div>
 
           {/* Stress over time */}
