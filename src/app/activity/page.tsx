@@ -13,7 +13,7 @@ import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { IntradayChart } from "@/components/charts/IntradayChart";
+import { DualIntradayChart } from "@/components/charts/DualIntradayChart";
 import {
   Activity,
   Footprints,
@@ -41,33 +41,57 @@ export default function ActivityPage() {
   const activities = data?.activity || [];
   const selected = activities.find((a) => a.day === selectedDate);
 
-  // Intraday HR for selected date
-  const hrData = useMemo(() => {
-    if (!data?.heartRate) return [];
-    return data.heartRate
-      .filter((hr: HeartRateEntry) => hr.timestamp.startsWith(selectedDate))
-      .map((hr: HeartRateEntry) => ({
-        time: new Date(hr.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
-        value: hr.bpm,
-      }));
-  }, [data?.heartRate, selectedDate]);
+  // Find wake-up time from sleep period for the selected date
+  const wakeTime = useMemo(() => {
+    if (!data?.sleepPeriods) return null;
+    const period = data.sleepPeriods.find(
+      (p) => p.day === selectedDate && p.type === "long_sleep"
+    );
+    return period ? new Date(period.bedtime_end) : null;
+  }, [data?.sleepPeriods, selectedDate]);
 
-  // Intraday MET for selected date
-  const metData = useMemo(() => {
-    if (!selected?.met) return [];
-    const { interval, items, timestamp } = selected.met;
-    const start = new Date(timestamp);
-    const result: { time: string; value: number }[] = [];
-    for (let i = 0; i < items.length; i++) {
-      if (items[i] <= 0) continue;
-      const t = new Date(start.getTime() + i * interval * 1000);
-      result.push({
-        time: t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
-        value: Math.round(items[i] * 10) / 10,
-      });
+  // Combined HR + MET data from wake time until now
+  const combinedIntradayData = useMemo(() => {
+    const timeMap = new Map<string, { time: string; hr?: number; met?: number; ts: number }>();
+    const wakeTs = wakeTime?.getTime() || 0;
+
+    // Add HR data
+    if (data?.heartRate) {
+      for (const hr of data.heartRate) {
+        if (!hr.timestamp.startsWith(selectedDate)) continue;
+        const t = new Date(hr.timestamp);
+        if (wakeTs && t.getTime() < wakeTs) continue;
+        const timeLabel = t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false });
+        const existing = timeMap.get(timeLabel);
+        if (existing) {
+          existing.hr = hr.bpm;
+        } else {
+          timeMap.set(timeLabel, { time: timeLabel, hr: hr.bpm, ts: t.getTime() });
+        }
+      }
     }
-    return result;
-  }, [selected?.met]);
+
+    // Add MET data
+    if (selected?.met) {
+      const { interval, items, timestamp } = selected.met;
+      const start = new Date(timestamp);
+      for (let i = 0; i < items.length; i++) {
+        if (items[i] <= 0) continue;
+        const t = new Date(start.getTime() + i * interval * 1000);
+        if (wakeTs && t.getTime() < wakeTs) continue;
+        const timeLabel = t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false });
+        const val = Math.round(items[i] * 10) / 10;
+        const existing = timeMap.get(timeLabel);
+        if (existing) {
+          existing.met = val;
+        } else {
+          timeMap.set(timeLabel, { time: timeLabel, met: val, ts: t.getTime() });
+        }
+      }
+    }
+
+    return Array.from(timeMap.values()).sort((a, b) => a.ts - b.ts);
+  }, [data?.heartRate, selected?.met, selectedDate, wakeTime]);
 
   const avgSteps = average(activities.map((a) => a.steps));
   const avgCalories = average(activities.map((a) => a.total_calories));
@@ -140,27 +164,12 @@ export default function ActivityPage() {
             </div>
           </div>
 
-          {/* Intraday HR & MET charts */}
-          {(hrData.length > 0 || metData.length > 0) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <IntradayChart
-                data={hrData}
-                title="Heart Rate"
-                color="#f43f5e"
-                unit=" bpm"
-                avgValue={hrData.length > 0 ? Math.round(hrData.reduce((s, d) => s + d.value, 0) / hrData.length) : undefined}
-                gradientId="actHRGrad"
-              />
-              <IntradayChart
-                data={metData}
-                title="MET (Metabolic Equivalent)"
-                color="#f59e0b"
-                unit=""
-                avgValue={metData.length > 0 ? Math.round(metData.reduce((s, d) => s + d.value, 0) / metData.length * 10) / 10 : undefined}
-                gradientId="actMETGrad"
-                domain={[0, 10]}
-              />
-            </div>
+          {/* Combined HR & MET chart */}
+          {combinedIntradayData.length > 0 && (
+            <DualIntradayChart
+              data={combinedIntradayData}
+              title={wakeTime ? `Heart Rate & MET (since ${wakeTime.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })})` : "Heart Rate & MET"}
+            />
           )}
 
           {/* Trends */}

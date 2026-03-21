@@ -5,6 +5,19 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { useOuraData } from "@/components/layout/OuraDataProvider";
+
+function LoadingBar() {
+  const { loading } = useOuraData();
+
+  if (!loading) return null;
+
+  return (
+    <div className="fixed top-0 left-0 right-0 z-50 h-0.5">
+      <div className="h-full bg-gradient-to-r from-oura-500 via-accent-violet to-oura-500 animate-loading-bar" />
+    </div>
+  );
+}
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -31,6 +44,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f]">
+      <LoadingBar />
       <Sidebar />
       <main className="ml-64 p-6 lg:p-8 transition-all duration-300">
         <ErrorBoundary>

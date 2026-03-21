@@ -55,6 +55,7 @@ const config: Config = {
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "float": "float 6s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
+        "loading-bar": "loadingBar 1.5s ease-in-out infinite",
       },
       keyframes: {
         fadeIn: {
@@ -76,6 +77,11 @@ const config: Config = {
         shimmer: {
           "0%": { backgroundPosition: "-200% 0" },
           "100%": { backgroundPosition: "200% 0" },
+        },
+        loadingBar: {
+          "0%": { transform: "translateX(-100%)", width: "30%" },
+          "50%": { width: "60%" },
+          "100%": { transform: "translateX(200%)", width: "30%" },
         },
       },
     },

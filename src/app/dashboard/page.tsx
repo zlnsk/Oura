@@ -369,7 +369,7 @@ function TodayProgress({
             title="Heart Rate"
             color="#f43f5e"
             unit=" bpm"
-            avgValue={hrData.length > 0 ? Math.round(hrData.reduce((s, d) => s + d.value, 0) / hrData.length) : undefined}
+            avgValue={!isToday && hrData.length > 0 ? Math.round(hrData.reduce((s, d) => s + d.value, 0) / hrData.length) : undefined}
             gradientId="hrIntradayGrad"
           />
           <IntradayChart
@@ -377,7 +377,7 @@ function TodayProgress({
             title="MET (Metabolic Equivalent)"
             color="#f59e0b"
             unit=""
-            avgValue={metData.length > 0 ? Math.round(metData.reduce((s, d) => s + d.value, 0) / metData.length * 10) / 10 : undefined}
+            avgValue={!isToday && metData.length > 0 ? Math.round(metData.reduce((s, d) => s + d.value, 0) / metData.length * 10) / 10 : undefined}
             gradientId="metIntradayGrad"
             domain={[0, 10]}
           />
