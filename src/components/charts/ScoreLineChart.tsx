@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -12,9 +13,8 @@ import {
 import { formatDate } from "@/lib/utils";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface ScoreLineChartProps {
-  data: any[];
+  data: object[];
   dataKey?: string;
   color?: string;
   gradientId?: string;
@@ -24,7 +24,7 @@ interface ScoreLineChartProps {
   unit?: string;
 }
 
-export function ScoreLineChart({
+export const ScoreLineChart = memo(function ScoreLineChart({
   data,
   dataKey = "score",
   color = "#0c93e9",
@@ -99,4 +99,4 @@ export function ScoreLineChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});

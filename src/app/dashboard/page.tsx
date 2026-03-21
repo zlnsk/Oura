@@ -514,11 +514,23 @@ export default function DashboardPage() {
   }, [selectedDate]);
 
   // Sleep/readiness: selected date first, then previous day (last night's data)
-  const todaySleep = data?.sleep?.find((s) => s.day === selectedDate) || data?.sleep?.find((s) => s.day === prevDate);
-  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === prevDate && s.type === "long_sleep");
-  const todayReadiness = data?.readiness?.find((r) => r.day === selectedDate) || data?.readiness?.find((r) => r.day === prevDate);
+  const todaySleep = useMemo(
+    () => data?.sleep?.find((s) => s.day === selectedDate) || data?.sleep?.find((s) => s.day === prevDate),
+    [data, selectedDate, prevDate]
+  );
+  const todaySleepPeriod = useMemo(
+    () => data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === prevDate && s.type === "long_sleep"),
+    [data, selectedDate, prevDate]
+  );
+  const todayReadiness = useMemo(
+    () => data?.readiness?.find((r) => r.day === selectedDate) || data?.readiness?.find((r) => r.day === prevDate),
+    [data, selectedDate, prevDate]
+  );
   // Activity: strictly selected date only
-  const todayActivity = data?.activity?.find((a) => a.day === selectedDate);
+  const todayActivity = useMemo(
+    () => data?.activity?.find((a) => a.day === selectedDate),
+    [data, selectedDate]
+  );
 
   // Intraday HR data for selected date
   const hrData = useMemo(() => {
@@ -548,8 +560,14 @@ export default function DashboardPage() {
     return result;
   }, [todayActivity?.met]);
 
-  const sleepScores = data?.sleep?.map((s) => s.score).filter(Boolean) || [];
-  const avgSteps = average(data?.activity?.map((a) => a.steps) || []);
+  const sleepScores = useMemo(
+    () => data?.sleep?.map((s) => s.score).filter(Boolean) || [],
+    [data]
+  );
+  const avgSteps = useMemo(
+    () => average(data?.activity?.map((a) => a.steps) || []),
+    [data]
+  );
 
   return (
     <DashboardShell>

@@ -65,7 +65,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+      <nav className="flex-1 p-3 space-y-1 overflow-y-auto" role="navigation" aria-label="Main navigation">
         {navItems.map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
@@ -76,6 +76,7 @@ export function Sidebar() {
               collapsed && "justify-center px-0"
             )}
             title={collapsed ? label : undefined}
+            aria-current={pathname === href ? "page" : undefined}
           >
             <Icon className="w-5 h-5 flex-shrink-0" />
             {!collapsed && <span>{label}</span>}
@@ -91,6 +92,7 @@ export function Sidebar() {
               collapsed && "justify-center px-0"
             )}
             title={collapsed ? "Settings" : undefined}
+            aria-current={pathname === "/settings" ? "page" : undefined}
           >
             <Settings className="w-5 h-5 flex-shrink-0" />
             {!collapsed && <span>Settings</span>}
@@ -108,6 +110,7 @@ export function Sidebar() {
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : undefined}
+          aria-label="Toggle theme"
         >
           {theme === "dark" ? (
             <Sun className="w-5 h-5 flex-shrink-0 text-amber-400" />
@@ -155,6 +158,7 @@ export function Sidebar() {
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? "Sign Out" : undefined}
+          aria-label="Sign out"
         >
           <LogOut className="w-5 h-5 flex-shrink-0" />
           {!collapsed && <span>Sign Out</span>}
@@ -164,6 +168,7 @@ export function Sidebar() {
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="nav-link w-full justify-center"
+          aria-label="Toggle sidebar"
         >
           {collapsed ? (
             <ChevronRight className="w-5 h-5" />

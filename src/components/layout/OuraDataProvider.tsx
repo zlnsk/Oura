@@ -12,16 +12,20 @@ interface CacheEntry {
   timestamp: number;
 }
 
-function readCache(days: number): DashboardData | null {
+function readCacheEntry(): CacheEntry | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
-    const entry: CacheEntry = JSON.parse(raw);
-    if (entry.days !== days) return null;
-    return entry.data;
+    return JSON.parse(raw) as CacheEntry;
   } catch {
     return null;
   }
+}
+
+function readCache(days: number): DashboardData | null {
+  const entry = readCacheEntry();
+  if (!entry || entry.days !== days) return null;
+  return entry.data;
 }
 
 function writeCache(data: DashboardData, days: number) {
@@ -34,15 +38,9 @@ function writeCache(data: DashboardData, days: number) {
 }
 
 function isCacheStale(days: number): boolean {
-  try {
-    const raw = localStorage.getItem(CACHE_KEY);
-    if (!raw) return true;
-    const entry: CacheEntry = JSON.parse(raw);
-    if (entry.days !== days) return true;
-    return Date.now() - entry.timestamp > STALE_MS;
-  } catch {
-    return true;
-  }
+  const entry = readCacheEntry();
+  if (!entry || entry.days !== days) return true;
+  return Date.now() - entry.timestamp > STALE_MS;
 }
 
 interface OuraDataContextType {
@@ -95,13 +93,10 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (hydratedRef.current) return;
     hydratedRef.current = true;
-    const cached = readCache(days);
-    if (cached) {
-      setData({ ...defaultData, ...cached });
-      try {
-        const raw = localStorage.getItem(CACHE_KEY);
-        if (raw) setLastUpdated(JSON.parse(raw).timestamp);
-      } catch { /* ignore */ }
+    const entry = readCacheEntry();
+    if (entry && entry.days === days) {
+      setData({ ...defaultData, ...entry.data });
+      setLastUpdated(entry.timestamp);
     }
   }, [days]);
 

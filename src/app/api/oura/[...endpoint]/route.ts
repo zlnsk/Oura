@@ -18,13 +18,17 @@ export async function GET(req: NextRequest) {
   }
 
   const searchParams = req.nextUrl.searchParams;
-  const days = parseInt(searchParams.get("days") || "30", 10);
+  const rawDays = parseInt(searchParams.get("days") || "30", 10);
+  const days = Number.isNaN(rawDays) ? 30 : Math.max(1, Math.min(365, rawDays));
 
   try {
     const data = await fetchAllOuraData(ouraToken, days);
     return NextResponse.json(data);
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("Oura API error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch data from Oura. Please check your API key and try again." },
+      { status: 500 }
+    );
   }
 }

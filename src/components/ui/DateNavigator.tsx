@@ -66,6 +66,7 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
           onClick={() => onDateChange(shiftDate(selectedDate, granularity, -1))}
           className="p-1.5 rounded-lg text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 transition-all"
           title={`Previous ${granularity}`}
+          aria-label={`Previous ${granularity}`}
         >
           <ChevronLeft className="w-4 h-4" />
         </button>
@@ -78,6 +79,7 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
               : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
           )}
           title="Click to go to today"
+          aria-label="Click to go to today"
         >
           {formatDisplayDate(selectedDate)}
         </button>
@@ -91,6 +93,7 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
               : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-white/10"
           )}
           title={`Next ${granularity}`}
+          aria-label={`Next ${granularity}`}
         >
           <ChevronRight className="w-4 h-4" />
         </button>

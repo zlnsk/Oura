@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -12,9 +13,8 @@ import {
 import { formatDate } from "@/lib/utils";
 import { useTheme } from "@/components/layout/ThemeProvider";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface BarChartComponentProps {
-  data: any[];
+  data: object[];
   dataKey: string;
   color?: string;
   title?: string;
@@ -22,7 +22,7 @@ interface BarChartComponentProps {
   unit?: string;
 }
 
-export function BarChartComponent({
+export const BarChartComponent = memo(function BarChartComponent({
   data,
   dataKey,
   color = "#0c93e9",
@@ -80,4 +80,4 @@ export function BarChartComponent({
       </ResponsiveContainer>
     </div>
   );
-}
+});

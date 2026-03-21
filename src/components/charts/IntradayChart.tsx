@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -23,7 +24,7 @@ interface IntradayChartProps {
   domain?: [number, number];
 }
 
-export function IntradayChart({
+export const IntradayChart = memo(function IntradayChart({
   data,
   title,
   height = 200,
@@ -125,4 +126,4 @@ export function IntradayChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});

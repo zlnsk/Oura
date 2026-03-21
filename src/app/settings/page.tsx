@@ -19,7 +19,6 @@ import {
   Shield,
   Trash2,
 } from "lucide-react";
-import { getCookie, setCookie, deleteCookie } from "cookies-next";
 import { cn } from "@/lib/utils";
 
 export default function SettingsPage() {
@@ -33,27 +32,49 @@ export default function SettingsPage() {
   const [testMessage, setTestMessage] = useState("");
 
   useEffect(() => {
-    const stored = getCookie("oura_api_key") as string;
-    if (stored) {
-      setApiKey(stored);
-      setHasKey(true);
-    }
+    fetch("/api/settings/token")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.hasToken) {
+          setHasKey(true);
+        }
+      })
+      .catch(() => {});
   }, []);
 
-  const handleSave = () => {
-    if (!apiKey.trim()) return;
-    setCookie("oura_api_key", apiKey.trim(), {
-      maxAge: 365 * 24 * 60 * 60, // 1 year
-      sameSite: "strict",
-      secure: window.location.protocol === "https:",
-    });
-    setHasKey(true);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const handleSave = async () => {
+    const trimmed = apiKey.trim();
+    if (!trimmed) return;
+    if (trimmed.length < 10 || !/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
+      setTestStatus("error");
+      setTestMessage("Invalid token format. Token must be at least 10 characters and contain only letters, numbers, hyphens, and underscores.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/settings/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: trimmed }),
+      });
+      if (res.ok) {
+        setHasKey(true);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 3000);
+      } else {
+        const data = await res.json();
+        setTestStatus("error");
+        setTestMessage(data.error || "Failed to save token");
+      }
+    } catch {
+      setTestStatus("error");
+      setTestMessage("Network error. Please try again.");
+    }
   };
 
-  const handleDelete = () => {
-    deleteCookie("oura_api_key");
+  const handleDelete = async () => {
+    try {
+      await fetch("/api/settings/token", { method: "DELETE" });
+    } catch {}
     setApiKey("");
     setHasKey(false);
     setSaved(false);
@@ -61,17 +82,31 @@ export default function SettingsPage() {
   };
 
   const handleTest = async () => {
-    if (!apiKey.trim()) return;
+    if (!apiKey.trim()) {
+      if (!hasKey) return;
+    } else {
+      // Save first so the API route can read it
+      const trimmed = apiKey.trim();
+      if (trimmed.length < 10 || !/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
+        setTestStatus("error");
+        setTestMessage("Invalid token format. Token must be at least 10 characters and contain only letters, numbers, hyphens, and underscores.");
+        return;
+      }
+      const saveRes = await fetch("/api/settings/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: trimmed }),
+      });
+      if (!saveRes.ok) {
+        setTestStatus("error");
+        setTestMessage("Failed to save token before testing.");
+        return;
+      }
+      setHasKey(true);
+    }
+
     setTestStatus("testing");
     try {
-      // Save first so the API route can read it
-      setCookie("oura_api_key", apiKey.trim(), {
-        maxAge: 365 * 24 * 60 * 60,
-        sameSite: "strict",
-        secure: window.location.protocol === "https:",
-      });
-      setHasKey(true);
-
       const res = await fetch("/api/oura/all?days=1");
       if (res.ok) {
         setTestStatus("success");
@@ -109,7 +144,7 @@ export default function SettingsPage() {
               <div>
                 <h3 className="font-semibold">Oura API Key</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  Your API key is stored securely in a browser cookie
+                  Your API key is stored securely in a server-side HTTP-only cookie
                 </p>
               </div>
             </div>
@@ -117,20 +152,22 @@ export default function SettingsPage() {
 
           <div className="p-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-2">
+              <label htmlFor="oura-api-key" className="block text-sm font-medium mb-2">
                 Personal Access Token
               </label>
               <div className="relative">
                 <input
+                  id="oura-api-key"
                   type={showKey ? "text" : "password"}
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}
-                  placeholder="Paste your Oura API token here..."
+                  placeholder={hasKey ? "Token saved (enter new value to update)" : "Paste your Oura API token here..."}
                   className="input-field pr-12"
                 />
                 <button
                   onClick={() => setShowKey(!showKey)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  aria-label="Toggle API key visibility"
                 >
                   {showKey ? (
                     <EyeOff className="w-4 h-4" />
@@ -195,7 +232,7 @@ export default function SettingsPage() {
             {saved && (
               <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400 text-sm flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
-                API key saved to cookie successfully
+                API key saved securely
               </div>
             )}
           </div>

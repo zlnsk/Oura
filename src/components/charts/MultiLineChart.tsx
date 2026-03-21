@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   ResponsiveContainer,
   LineChart,
@@ -19,16 +20,15 @@ interface LineConfig {
   name: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface MultiLineChartProps {
-  data: any[];
+  data: object[];
   lines: LineConfig[];
   title?: string;
   height?: number;
   unit?: string;
 }
 
-export function MultiLineChart({
+export const MultiLineChart = memo(function MultiLineChart({
   data,
   lines,
   title,
@@ -94,4 +94,4 @@ export function MultiLineChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});

@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import {
   ResponsiveContainer,
   BarChart,
@@ -20,7 +21,7 @@ interface SleepStagesChartProps {
   height?: number;
 }
 
-export function SleepStagesChart({
+export const SleepStagesChart = memo(function SleepStagesChart({
   data,
   title = "Sleep Stages",
   height = 320,
@@ -81,4 +82,4 @@ export function SleepStagesChart({
       </ResponsiveContainer>
     </div>
   );
-}
+});

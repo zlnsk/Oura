@@ -37,6 +37,8 @@ export function ScoreRing({
           height={size}
           className="transform -rotate-90"
           style={{ filter: `drop-shadow(0 0 8px ${color.glow})` }}
+          role="img"
+          aria-label={`Score: ${score} out of 100`}
         >
           <circle
             cx={size / 2}
