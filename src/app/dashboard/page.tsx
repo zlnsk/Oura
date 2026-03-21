@@ -21,9 +21,311 @@ import {
   Wind,
   RefreshCw,
   Sparkles,
+  Moon,
+  Sun,
+  Clock,
+  Zap,
+  Activity,
+  Target,
 } from "lucide-react";
-import { average, trend, formatDuration } from "@/lib/utils";
-import type { DashboardData } from "@/types/oura";
+import { average, trend, formatDuration, getScoreColor, getScoreLabel } from "@/lib/utils";
+import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
+
+function getToday(): string {
+  return new Date().toISOString().split("T")[0];
+}
+
+function formatTime(isoString: string): string {
+  const d = new Date(isoString);
+  return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+}
+
+function SleepStageBar({
+  label,
+  minutes,
+  totalMinutes,
+  color,
+}: {
+  label: string;
+  minutes: number;
+  totalMinutes: number;
+  color: string;
+}) {
+  const pct = totalMinutes > 0 ? Math.round((minutes / totalMinutes) * 100) : 0;
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="font-medium tabular-nums">
+          {Math.floor(minutes / 60)}h {minutes % 60}m
+          <span className="text-slate-400 dark:text-slate-500 ml-1">({pct}%)</span>
+        </span>
+      </div>
+      <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${pct}%`, backgroundColor: color }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function ContributorBar({ label, value }: { label: string; value: number }) {
+  const getBarColor = (v: number) => {
+    if (v >= 85) return "#10b981";
+    if (v >= 70) return "#f59e0b";
+    return "#f43f5e";
+  };
+  return (
+    <div className="space-y-1">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-slate-600 dark:text-slate-400">{label}</span>
+        <span className="font-medium tabular-nums">{value}</span>
+      </div>
+      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+        <div
+          className="h-full rounded-full transition-all duration-700 ease-out"
+          style={{ width: `${value}%`, backgroundColor: getBarColor(value) }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function TodayProgress({
+  todaySleep,
+  todaySleepPeriod,
+  todayActivity,
+  todayReadiness,
+}: {
+  todaySleep: DailySleep | undefined;
+  todaySleepPeriod: SleepPeriod | undefined;
+  todayActivity: DailyActivity | undefined;
+  todayReadiness: DailyReadiness | undefined;
+}) {
+  const today = new Date();
+  const dateStr = today.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+
+  const hour = today.getHours();
+  const greeting =
+    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  const hasSleep = todaySleepPeriod && todaySleepPeriod.total_sleep_duration > 0;
+  const hasActivity = todayActivity && todayActivity.score > 0;
+  const hasReadiness = todayReadiness && todayReadiness.score > 0;
+
+  if (!hasSleep && !hasActivity && !hasReadiness) {
+    return (
+      <div className="premium-card p-6">
+        <div className="flex items-center gap-3 mb-2">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+            <Sun className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <h2 className="font-semibold text-lg">{greeting}</h2>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{dateStr}</p>
+          </div>
+        </div>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
+          No data for today yet. Your progress will appear here once Oura syncs.
+        </p>
+      </div>
+    );
+  }
+
+  // Sleep stage breakdown in minutes
+  const deepMin = hasSleep ? Math.round(todaySleepPeriod.deep_sleep_duration / 60) : 0;
+  const remMin = hasSleep ? Math.round(todaySleepPeriod.rem_sleep_duration / 60) : 0;
+  const lightMin = hasSleep ? Math.round(todaySleepPeriod.light_sleep_duration / 60) : 0;
+  const awakeMin = hasSleep ? Math.round(todaySleepPeriod.awake_time / 60) : 0;
+  const totalMin = deepMin + remMin + lightMin + awakeMin;
+
+  return (
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="premium-card p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-blue-500 flex items-center justify-center shadow-lg shadow-sky-500/20">
+              <Sun className="w-5 h-5 text-white" />
+            </div>
+            <div>
+              <h2 className="font-semibold text-lg">{greeting}</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">{dateStr}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-6">
+            {todaySleep && (
+              <ScoreRing score={todaySleep.score} size={64} label="Sleep" />
+            )}
+            {hasActivity && (
+              <ScoreRing score={todayActivity.score} size={64} label="Activity" />
+            )}
+            {hasReadiness && (
+              <ScoreRing score={todayReadiness.score} size={64} label="Readiness" />
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Last Night's Sleep */}
+        {hasSleep && (
+          <div className="premium-card p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Moon className="w-4 h-4 text-indigo-400" />
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Last Night&apos;s Sleep
+              </h3>
+            </div>
+
+            {/* Bedtime / Wake time row */}
+            <div className="grid grid-cols-3 gap-3 mb-5">
+              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                <Clock className="w-3.5 h-3.5 text-slate-400 mx-auto mb-1" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">Bedtime</p>
+                <p className="text-sm font-semibold mt-0.5">
+                  {formatTime(todaySleepPeriod.bedtime_start)}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                <Sun className="w-3.5 h-3.5 text-amber-400 mx-auto mb-1" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">Wake up</p>
+                <p className="text-sm font-semibold mt-0.5">
+                  {formatTime(todaySleepPeriod.bedtime_end)}
+                </p>
+              </div>
+              <div className="text-center p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                <BedDouble className="w-3.5 h-3.5 text-indigo-400 mx-auto mb-1" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">Total</p>
+                <p className="text-sm font-semibold mt-0.5">
+                  {formatDuration(todaySleepPeriod.total_sleep_duration)}
+                </p>
+              </div>
+            </div>
+
+            {/* Sleep stages */}
+            <div className="space-y-2.5">
+              <SleepStageBar label="Deep" minutes={deepMin} totalMinutes={totalMin} color="#6366f1" />
+              <SleepStageBar label="REM" minutes={remMin} totalMinutes={totalMin} color="#8b5cf6" />
+              <SleepStageBar label="Light" minutes={lightMin} totalMinutes={totalMin} color="#a78bfa" />
+              <SleepStageBar label="Awake" minutes={awakeMin} totalMinutes={totalMin} color="#f43f5e" />
+            </div>
+
+            {/* Sleep vitals */}
+            <div className="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+              <div className="text-center">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Efficiency</p>
+                <p className="text-sm font-bold mt-0.5">{todaySleepPeriod.efficiency}%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Avg HR</p>
+                <p className="text-sm font-bold mt-0.5">
+                  {todaySleepPeriod.average_heart_rate} <span className="text-xs font-normal text-slate-400">bpm</span>
+                </p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-slate-500 dark:text-slate-400">HRV</p>
+                <p className="text-sm font-bold mt-0.5">
+                  {todaySleepPeriod.average_hrv} <span className="text-xs font-normal text-slate-400">ms</span>
+                </p>
+              </div>
+            </div>
+
+            {/* Sleep score contributors */}
+            {todaySleep && todaySleep.contributors && (
+              <div className="mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mb-3">Score Contributors</p>
+                <div className="space-y-2">
+                  <ContributorBar label="Deep sleep" value={todaySleep.contributors.deep_sleep} />
+                  <ContributorBar label="REM sleep" value={todaySleep.contributors.rem_sleep} />
+                  <ContributorBar label="Efficiency" value={todaySleep.contributors.efficiency} />
+                  <ContributorBar label="Restfulness" value={todaySleep.contributors.restfulness} />
+                  <ContributorBar label="Timing" value={todaySleep.contributors.timing} />
+                  <ContributorBar label="Latency" value={todaySleep.contributors.latency} />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Today's Readiness & Activity */}
+        <div className="space-y-4">
+          {/* Readiness */}
+          {hasReadiness && (
+            <div className="premium-card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Zap className="w-4 h-4 text-emerald-400" />
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Today&apos;s Readiness
+                </h3>
+              </div>
+              <div className="space-y-2">
+                <ContributorBar label="HRV Balance" value={todayReadiness.contributors.hrv_balance} />
+                <ContributorBar label="Resting HR" value={todayReadiness.contributors.resting_heart_rate} />
+                <ContributorBar label="Body Temperature" value={todayReadiness.contributors.body_temperature} />
+                <ContributorBar label="Recovery Index" value={todayReadiness.contributors.recovery_index} />
+                <ContributorBar label="Sleep Balance" value={todayReadiness.contributors.sleep_balance} />
+                <ContributorBar label="Previous Night" value={todayReadiness.contributors.previous_night} />
+                <ContributorBar label="Activity Balance" value={todayReadiness.contributors.activity_balance} />
+              </div>
+            </div>
+          )}
+
+          {/* Activity */}
+          {hasActivity && (
+            <div className="premium-card p-6">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="w-4 h-4 text-amber-400" />
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Today&apos;s Activity
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                  <Footprints className="w-3.5 h-3.5 text-emerald-500 mb-1" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Steps</p>
+                  <p className="text-sm font-bold">{todayActivity.steps.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                  <Flame className="w-3.5 h-3.5 text-orange-500 mb-1" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Calories</p>
+                  <p className="text-sm font-bold">{todayActivity.total_calories.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                  <Target className="w-3.5 h-3.5 text-blue-500 mb-1" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Active Calories</p>
+                  <p className="text-sm font-bold">{todayActivity.active_calories.toLocaleString()}</p>
+                </div>
+                <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
+                  <Clock className="w-3.5 h-3.5 text-violet-500 mb-1" />
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Active Time</p>
+                  <p className="text-sm font-bold">
+                    {formatDuration(todayActivity.high_activity_time + todayActivity.medium_activity_time + todayActivity.low_activity_time)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <ContributorBar label="Stay Active" value={todayActivity.contributors.stay_active} />
+                <ContributorBar label="Move Every Hour" value={todayActivity.contributors.move_every_hour} />
+                <ContributorBar label="Daily Targets" value={todayActivity.contributors.meet_daily_targets} />
+                <ContributorBar label="Training Frequency" value={todayActivity.contributors.training_frequency} />
+                <ContributorBar label="Training Volume" value={todayActivity.contributors.training_volume} />
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function AISummarySection({ data }: { data: DashboardData }) {
   const [summary, setSummary] = useState<string | null>(null);
@@ -140,6 +442,12 @@ export default function DashboardPage() {
     fetchData();
   }, [fetchData]);
 
+  const today = getToday();
+  const todaySleep = data?.sleep?.find((s) => s.day === today);
+  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today);
+  const todayActivity = data?.activity?.find((a) => a.day === today);
+  const todayReadiness = data?.readiness?.find((r) => r.day === today);
+
   const latestSleep = data?.sleep?.[data.sleep.length - 1];
   const latestActivity = data?.activity?.[data.activity.length - 1];
   const latestReadiness = data?.readiness?.[data.readiness.length - 1];
@@ -181,6 +489,14 @@ export default function DashboardPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          {/* Today's Progress */}
+          <TodayProgress
+            todaySleep={todaySleep}
+            todaySleepPeriod={todaySleepPeriod}
+            todayActivity={todayActivity}
+            todayReadiness={todayReadiness}
+          />
+
           {/* Score rings */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-12">
