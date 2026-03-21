@@ -82,6 +82,12 @@ export interface DailyActivity {
   target_calories: number;
   target_meters: number;
   total_calories: number;
+  met?: {
+    interval: number;
+    items: number[];
+    timestamp: string;
+  };
+  class_5_min?: string;
   contributors: {
     meet_daily_targets: number;
     move_every_hour: number;

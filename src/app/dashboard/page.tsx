@@ -1,16 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { IntradayChart } from "@/components/charts/IntradayChart";
 import {
   LayoutDashboard,
   BedDouble,
@@ -28,7 +30,7 @@ import {
   Target,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
-import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
+import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness, HeartRateEntry } from "@/types/oura";
 
 function getDateStr(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -108,28 +110,36 @@ function TodayProgress({
   todayActivity,
   todayReadiness,
   aiSummary,
+  hrData,
+  metData,
+  selectedDate,
 }: {
   todaySleep: DailySleep | undefined;
   todaySleepPeriod: SleepPeriod | undefined;
   todayActivity: DailyActivity | undefined;
   todayReadiness: DailyReadiness | undefined;
   aiSummary: AISummary | null;
+  hrData: { time: string; value: number }[];
+  metData: { time: string; value: number }[];
+  selectedDate: string;
 }) {
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("en-US", {
+  const selectedDateObj = new Date(selectedDate + "T12:00:00");
+  const dateStr = selectedDateObj.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
 
+  const today = getToday();
+  const isToday = selectedDate === today;
+  const now = new Date();
   const hour = now.getHours();
-  const greeting =
-    hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const greeting = isToday
+    ? (hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening")
+    : dateStr;
 
   // Determine if we're showing today's data or the latest available
   const dataDay = todaySleep?.day || todayActivity?.day || todayReadiness?.day;
-  const today = getToday();
-  const isToday = dataDay === today;
 
   const hasSleep = todaySleepPeriod && todaySleepPeriod.total_sleep_duration > 0;
   const hasActivity = todayActivity && todayActivity.score > 0;
@@ -350,6 +360,29 @@ function TodayProgress({
           )}
         </div>
       </div>
+
+      {/* Intraday HR & MET Charts */}
+      {(hrData.length > 0 || metData.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <IntradayChart
+            data={hrData}
+            title="Heart Rate"
+            color="#f43f5e"
+            unit=" bpm"
+            avgValue={hrData.length > 0 ? Math.round(hrData.reduce((s, d) => s + d.value, 0) / hrData.length) : undefined}
+            gradientId="hrIntradayGrad"
+          />
+          <IntradayChart
+            data={metData}
+            title="MET (Metabolic Equivalent)"
+            color="#f59e0b"
+            unit=""
+            avgValue={metData.length > 0 ? Math.round(metData.reduce((s, d) => s + d.value, 0) / metData.length * 10) / 10 : undefined}
+            gradientId="metIntradayGrad"
+            domain={[0, 10]}
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -444,6 +477,7 @@ export default function DashboardPage() {
   const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   const fetchAiSummary = async () => {
     if (!data) return;
@@ -472,15 +506,47 @@ export default function DashboardPage() {
     fetchData();
   }, [fetchData]);
 
-  const today = getToday();
-  const yesterday = getYesterday();
-  // Sleep/readiness: check today first, then yesterday (last night's data)
-  const todaySleep = data?.sleep?.find((s) => s.day === today) || data?.sleep?.find((s) => s.day === yesterday);
-  // Only use long_sleep periods (skip naps/rest)
-  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === yesterday && s.type === "long_sleep");
-  const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.find((r) => r.day === yesterday);
-  // Activity: strictly today only
-  const todayActivity = data?.activity?.find((a) => a.day === today);
+  // Compute previous day for sleep lookback
+  const prevDate = useMemo(() => {
+    const d = new Date(selectedDate + "T12:00:00");
+    d.setDate(d.getDate() - 1);
+    return getDateStr(d);
+  }, [selectedDate]);
+
+  // Sleep/readiness: selected date first, then previous day (last night's data)
+  const todaySleep = data?.sleep?.find((s) => s.day === selectedDate) || data?.sleep?.find((s) => s.day === prevDate);
+  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === prevDate && s.type === "long_sleep");
+  const todayReadiness = data?.readiness?.find((r) => r.day === selectedDate) || data?.readiness?.find((r) => r.day === prevDate);
+  // Activity: strictly selected date only
+  const todayActivity = data?.activity?.find((a) => a.day === selectedDate);
+
+  // Intraday HR data for selected date
+  const hrData = useMemo(() => {
+    if (!data?.heartRate) return [];
+    return data.heartRate
+      .filter((hr: HeartRateEntry) => hr.timestamp.startsWith(selectedDate))
+      .map((hr: HeartRateEntry) => ({
+        time: new Date(hr.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+        value: hr.bpm,
+      }));
+  }, [data?.heartRate, selectedDate]);
+
+  // Intraday MET data from daily activity
+  const metData = useMemo(() => {
+    if (!todayActivity?.met) return [];
+    const { interval, items, timestamp } = todayActivity.met;
+    const start = new Date(timestamp);
+    const result: { time: string; value: number }[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i] <= 0) continue;
+      const t = new Date(start.getTime() + i * interval * 1000);
+      result.push({
+        time: t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+        value: Math.round(items[i] * 10) / 10,
+      });
+    }
+    return result;
+  }, [todayActivity?.met]);
 
   const sleepScores = data?.sleep?.map((s) => s.score).filter(Boolean) || [];
   const avgSteps = average(data?.activity?.map((a) => a.steps) || []);
@@ -488,12 +554,13 @@ export default function DashboardPage() {
   return (
     <DashboardShell>
       <PageHeader
-        title="Today"
-        subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+        title="Daily View"
+        subtitle={new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         icon={LayoutDashboard}
         iconColor="#0c93e9"
         action={
           <div className="flex items-center gap-3">
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             {lastUpdated && (
               <span className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
                 Updated {new Date(lastUpdated).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -525,6 +592,9 @@ export default function DashboardPage() {
             todayActivity={todayActivity}
             todayReadiness={todayReadiness}
             aiSummary={aiSummary}
+            hrData={hrData}
+            metData={metData}
+            selectedDate={selectedDate}
           />
 
           {/* AI Summary */}
@@ -550,7 +620,7 @@ export default function DashboardPage() {
               icon={BedDouble}
               color="#6366f1"
               trend={trend(data.sleep.map((s) => s.score))}
-              trendLabel={`Today ${todaySleep?.score || "--"}`}
+              trendLabel={`Latest ${todaySleep?.score || "--"}`}
               trendPositive={trend(data.sleep.map((s) => s.score)) === "up"}
             />
             <StatCard
@@ -559,7 +629,7 @@ export default function DashboardPage() {
               icon={Footprints}
               color="#10b981"
               trend={trend(data.activity.map((a) => a.steps))}
-              trendLabel={`Today ${todayActivity?.steps?.toLocaleString() || "--"}`}
+              trendLabel={`Latest ${todayActivity?.steps?.toLocaleString() || "--"}`}
               trendPositive={trend(data.activity.map((a) => a.steps)) === "up"}
             />
             <StatCard
