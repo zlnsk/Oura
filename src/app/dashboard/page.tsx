@@ -498,7 +498,6 @@ export default function DashboardPage() {
                 Updated {new Date(lastUpdated).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
               </span>
             )}
-            <DateRangeSelector />
             <button
               onClick={fetchData}
               disabled={loading}
@@ -526,6 +525,21 @@ export default function DashboardPage() {
             todayReadiness={todayReadiness}
             aiSummary={aiSummary}
           />
+
+          {/* AI Summary */}
+          <AISummarySection
+            data={data}
+            aiSummary={aiSummary}
+            onFetch={fetchAiSummary}
+            loading={aiLoading}
+            error={aiError}
+          />
+
+          {/* Trends section */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <DateRangeSelector />
+          </div>
 
           {/* Score rings */}
           <div className="premium-card p-8">
@@ -669,14 +683,6 @@ export default function DashboardPage() {
             />
           </div>
 
-          {/* AI Summary */}
-          <AISummarySection
-            data={data}
-            aiSummary={aiSummary}
-            onFetch={fetchAiSummary}
-            loading={aiLoading}
-            error={aiError}
-          />
         </div>
       )}
     </DashboardShell>
