@@ -23,10 +23,15 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
-import type { HeartRateEntry } from "@/types/oura";
 
 function getToday(): string {
   const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function getPrevDate(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  d.setDate(d.getDate() - 1);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
@@ -41,14 +46,15 @@ export default function ActivityPage() {
   const activities = data?.activity || [];
   const selected = activities.find((a) => a.day === selectedDate);
 
-  // Find wake-up time from sleep period for the selected date
+  // Find wake-up time from sleep period (check selected date and previous day)
+  const prevDate = useMemo(() => getPrevDate(selectedDate), [selectedDate]);
   const wakeTime = useMemo(() => {
     if (!data?.sleepPeriods) return null;
-    const period = data.sleepPeriods.find(
-      (p) => p.day === selectedDate && p.type === "long_sleep"
-    );
+    const period =
+      data.sleepPeriods.find((p) => p.day === selectedDate && p.type === "long_sleep") ||
+      data.sleepPeriods.find((p) => p.day === prevDate && p.type === "long_sleep");
     return period ? new Date(period.bedtime_end) : null;
-  }, [data?.sleepPeriods, selectedDate]);
+  }, [data?.sleepPeriods, selectedDate, prevDate]);
 
   // Combined HR + MET data from wake time until now
   const combinedIntradayData = useMemo(() => {
