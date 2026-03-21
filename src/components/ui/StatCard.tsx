@@ -1,0 +1,95 @@
+"use client";
+
+import { cn } from "@/lib/utils";
+import { TrendingUp, TrendingDown, Minus, type LucideIcon } from "lucide-react";
+
+interface StatCardProps {
+  label: string;
+  value: string | number;
+  unit?: string;
+  icon?: LucideIcon;
+  trend?: "up" | "down" | "stable";
+  trendLabel?: string;
+  trendPositive?: boolean;
+  color?: string;
+  className?: string;
+}
+
+export function StatCard({
+  label,
+  value,
+  unit,
+  icon: Icon,
+  trend,
+  trendLabel,
+  trendPositive,
+  color,
+  className,
+}: StatCardProps) {
+  const TrendIcon =
+    trend === "up" ? TrendingUp : trend === "down" ? TrendingDown : Minus;
+
+  return (
+    <div
+      className={cn(
+        "premium-card p-5 group cursor-default",
+        className
+      )}
+    >
+      <div className="flex items-start justify-between">
+        <div>
+          <p className="stat-label">{label}</p>
+          <div className="mt-2 flex items-baseline gap-1.5">
+            <span className="stat-value" style={color ? { color } : undefined}>
+              {value}
+            </span>
+            {unit && (
+              <span className="text-sm font-medium text-slate-400">{unit}</span>
+            )}
+          </div>
+        </div>
+        {Icon && (
+          <div
+            className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center",
+              "bg-slate-100 dark:bg-white/5",
+              "group-hover:scale-110 transition-transform duration-300"
+            )}
+            style={color ? { color } : undefined}
+          >
+            <Icon className="w-5 h-5" />
+          </div>
+        )}
+      </div>
+
+      {trend && (
+        <div className="mt-3 flex items-center gap-1.5">
+          <TrendIcon
+            className={cn(
+              "w-3.5 h-3.5",
+              trendPositive === undefined
+                ? "text-slate-400"
+                : trendPositive
+                ? "text-emerald-500"
+                : "text-rose-500"
+            )}
+          />
+          {trendLabel && (
+            <span
+              className={cn(
+                "text-xs font-medium",
+                trendPositive === undefined
+                  ? "text-slate-400"
+                  : trendPositive
+                  ? "text-emerald-500"
+                  : "text-rose-500"
+              )}
+            >
+              {trendLabel}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

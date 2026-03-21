@@ -1,0 +1,163 @@
+"use client";
+
+import { useEffect } from "react";
+import { DashboardShell } from "@/components/layout/DashboardShell";
+import { useOuraData } from "@/components/layout/OuraDataProvider";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { StatCard } from "@/components/ui/StatCard";
+import { ScoreRing } from "@/components/ui/ScoreRing";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { LoadingGrid } from "@/components/ui/LoadingGrid";
+import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
+import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { Zap, Thermometer, Heart, Wind, RefreshCw } from "lucide-react";
+import { average, trend } from "@/lib/utils";
+
+export default function ReadinessPage() {
+  const { data, loading, fetchData } = useOuraData();
+
+  useEffect(() => {
+    if (!data) fetchData();
+  }, [data, fetchData]);
+
+  const readiness = data?.readiness || [];
+  const latest = readiness[readiness.length - 1];
+
+  return (
+    <DashboardShell>
+      <PageHeader
+        title="Readiness"
+        subtitle="Recovery and readiness metrics"
+        icon={Zap}
+        iconColor="#f59e0b"
+        action={
+          <div className="flex items-center gap-3">
+            <DateRangeSelector />
+            <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
+              <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+            </button>
+          </div>
+        }
+      />
+
+      {loading && !data && <LoadingGrid />}
+      {!loading && !data && <EmptyState />}
+
+      {data && (
+        <div className="space-y-6 animate-fade-in">
+          {/* Score overview */}
+          <div className="premium-card p-8">
+            <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
+              <ScoreRing
+                score={latest?.score || 0}
+                size={140}
+                strokeWidth={10}
+                label="Readiness Score"
+              />
+              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+                {latest && (
+                  <>
+                    <div>
+                      <p className="stat-label">Temp Deviation</p>
+                      <p className="text-xl font-bold mt-1">
+                        {latest.temperature_deviation?.toFixed(2) || "--"}°C
+                      </p>
+                    </div>
+                    <div>
+                      <p className="stat-label">Temp Trend</p>
+                      <p className="text-xl font-bold mt-1">
+                        {latest.temperature_trend_deviation?.toFixed(2) || "--"}°C
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="Avg Readiness"
+              value={average(readiness.map((r) => r.score))}
+              icon={Zap}
+              color="#f59e0b"
+              trend={trend(readiness.map((r) => r.score))}
+              trendPositive={trend(readiness.map((r) => r.score)) === "up"}
+            />
+            <StatCard
+              label="Best Score"
+              value={Math.max(...readiness.map((r) => r.score), 0)}
+              icon={Zap}
+              color="#10b981"
+            />
+            <StatCard
+              label="Lowest Score"
+              value={readiness.length ? Math.min(...readiness.map((r) => r.score)) : "--"}
+              icon={Zap}
+              color="#f43f5e"
+            />
+            <StatCard
+              label="Avg Temp Dev"
+              value={
+                average(readiness.map((r) => Math.round((r.temperature_deviation || 0) * 100))) / 100
+              }
+              unit="°C"
+              icon={Thermometer}
+              color="#06b6d4"
+            />
+          </div>
+
+          {/* Score trend */}
+          <ScoreLineChart
+            data={readiness}
+            title="Readiness Score Trend"
+            color="#f59e0b"
+            gradientId="readScoreGrad"
+            domain={[40, 100]}
+          />
+
+          {/* Temperature */}
+          <MultiLineChart
+            data={readiness.map((r) => ({
+              day: r.day,
+              deviation: Number((r.temperature_deviation || 0).toFixed(2)),
+              trend: Number((r.temperature_trend_deviation || 0).toFixed(2)),
+            }))}
+            lines={[
+              { key: "deviation", color: "#f43f5e", name: "Temp Deviation" },
+              { key: "trend", color: "#06b6d4", name: "Temp Trend" },
+            ]}
+            title="Body Temperature Deviation"
+            unit="°C"
+          />
+
+          {/* Contributors */}
+          {latest?.contributors && (
+            <div className="premium-card p-6">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+                Readiness Contributors (Latest)
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
+                {Object.entries(latest.contributors).map(([key, value]) => (
+                  <div key={key} className="text-center">
+                    <ScoreRing
+                      score={value as number}
+                      size={64}
+                      strokeWidth={5}
+                      className="mx-auto"
+                    />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 capitalize">
+                      {key.replace(/_/g, " ")}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </DashboardShell>
+  );
+}
