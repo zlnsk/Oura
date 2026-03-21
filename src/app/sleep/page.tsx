@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,37 +13,88 @@ import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { SleepStagesChart } from "@/components/charts/SleepStagesChart";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { IntradayChart } from "@/components/charts/IntradayChart";
 import {
   BedDouble,
   Clock,
   Wind,
   Heart,
   Moon,
-  Zap,
   RefreshCw,
 } from "lucide-react";
-import { average, trend, formatDuration, formatHoursMinutes } from "@/lib/utils";
+import { average, trend, formatDuration } from "@/lib/utils";
+import type { SleepPeriod } from "@/types/oura";
+
+function getDateStr(date: Date): string {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+}
+
+function getToday(): string {
+  return getDateStr(new Date());
+}
+
+function buildIntradayHR(period: SleepPeriod): { time: string; value: number }[] {
+  if (!period.heart_rate) return [];
+  const { interval, items, timestamp } = period.heart_rate;
+  const start = new Date(timestamp);
+  const result: { time: string; value: number }[] = [];
+  for (let i = 0; i < items.length; i++) {
+    if (items[i] <= 0) continue;
+    const t = new Date(start.getTime() + i * interval * 1000);
+    result.push({
+      time: t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+      value: items[i],
+    });
+  }
+  return result;
+}
+
+function buildIntradayHRV(period: SleepPeriod): { time: string; value: number }[] {
+  if (!period.hrv) return [];
+  const { interval, items, timestamp } = period.hrv;
+  const start = new Date(timestamp);
+  const result: { time: string; value: number }[] = [];
+  for (let i = 0; i < items.length; i++) {
+    if (items[i] <= 0) continue;
+    const t = new Date(start.getTime() + i * interval * 1000);
+    result.push({
+      time: t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+      value: Math.round(items[i]),
+    });
+  }
+  return result;
+}
 
 export default function SleepPage() {
   const { data, loading, fetchData } = useOuraData();
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   useEffect(() => {
     if (!data) fetchData();
   }, [data, fetchData]);
 
   const allPeriods = data?.sleepPeriods || [];
-  // Filter to long_sleep only for main charts (excludes naps, rest periods)
   const periods = allPeriods.filter((p) => p.type === "long_sleep");
   const dailySleep = data?.sleep || [];
-  const latest = periods[periods.length - 1];
+
+  // Find selected day's sleep data (check selected date and previous day)
+  const prevDate = useMemo(() => {
+    const d = new Date(selectedDate + "T12:00:00");
+    d.setDate(d.getDate() - 1);
+    return getDateStr(d);
+  }, [selectedDate]);
+
+  const selectedPeriod = periods.find((p) => p.day === selectedDate) || periods.find((p) => p.day === prevDate);
+  const selectedDailySleep = dailySleep.find((s) => s.day === selectedDate) || dailySleep.find((s) => s.day === prevDate);
+
+  // Intraday HR/HRV for selected night
+  const sleepHR = useMemo(() => selectedPeriod ? buildIntradayHR(selectedPeriod) : [], [selectedPeriod]);
+  const sleepHRV = useMemo(() => selectedPeriod ? buildIntradayHRV(selectedPeriod) : [], [selectedPeriod]);
 
   const avgTotal = average(periods.map((p) => p.total_sleep_duration));
   const avgDeep = average(periods.map((p) => p.deep_sleep_duration));
-  const avgRem = average(periods.map((p) => p.rem_sleep_duration));
-  const avgEfficiency = average(periods.map((p) => p.efficiency));
   const avgHRV = average(periods.map((p) => p.average_hrv));
   const avgHR = average(periods.map((p) => p.average_heart_rate));
-  const avgLowestHR = average(periods.map((p) => p.lowest_heart_rate));
 
   return (
     <DashboardShell>
@@ -53,7 +105,7 @@ export default function SleepPage() {
         iconColor="#6366f1"
         action={
           <div className="flex items-center gap-3">
-            <DateRangeSelector />
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -66,53 +118,82 @@ export default function SleepPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
-          {/* Latest night overview */}
+          {/* Selected night overview */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
               <ScoreRing
-                score={dailySleep[dailySleep.length - 1]?.score || 0}
+                score={selectedDailySleep?.score || 0}
                 size={140}
                 strokeWidth={10}
                 label="Sleep Score"
               />
               <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-                {latest && (
+                {selectedPeriod ? (
                   <>
                     <div>
                       <p className="stat-label">Total Sleep</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(latest.total_sleep_duration)}</p>
+                      <p className="text-xl font-bold mt-1">{formatDuration(selectedPeriod.total_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Efficiency</p>
-                      <p className="text-xl font-bold mt-1">{latest.efficiency}%</p>
+                      <p className="text-xl font-bold mt-1">{selectedPeriod.efficiency}%</p>
                     </div>
                     <div>
                       <p className="stat-label">Deep Sleep</p>
-                      <p className="text-xl font-bold mt-1 text-indigo-500">{formatDuration(latest.deep_sleep_duration)}</p>
+                      <p className="text-xl font-bold mt-1 text-indigo-500">{formatDuration(selectedPeriod.deep_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">REM Sleep</p>
-                      <p className="text-xl font-bold mt-1 text-violet-500">{formatDuration(latest.rem_sleep_duration)}</p>
+                      <p className="text-xl font-bold mt-1 text-violet-500">{formatDuration(selectedPeriod.rem_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Bedtime</p>
                       <p className="text-xl font-bold mt-1">
-                        {new Date(latest.bedtime_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        {new Date(selectedPeriod.bedtime_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
                     <div>
                       <p className="stat-label">Wake Time</p>
                       <p className="text-xl font-bold mt-1">
-                        {new Date(latest.bedtime_end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        {new Date(selectedPeriod.bedtime_end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
                   </>
+                ) : (
+                  <div className="col-span-2 text-sm text-slate-400">No sleep data for this date</div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Stats */}
+          {/* Intraday HR & HRV during sleep */}
+          {(sleepHR.length > 0 || sleepHRV.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <IntradayChart
+                data={sleepHR}
+                title="Heart Rate During Sleep"
+                color="#f43f5e"
+                unit=" bpm"
+                avgValue={selectedPeriod?.average_heart_rate}
+                gradientId="sleepHRGrad"
+              />
+              <IntradayChart
+                data={sleepHRV}
+                title="HRV During Sleep"
+                color="#8b5cf6"
+                unit=" ms"
+                avgValue={selectedPeriod?.average_hrv}
+                gradientId="sleepHRVGrad"
+              />
+            </div>
+          )}
+
+          {/* Period averages */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <DateRangeSelector />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label="Avg Total Sleep"
@@ -162,12 +243,12 @@ export default function SleepPage() {
           {/* Sleep stages */}
           <SleepStagesChart data={periods} />
 
-          {/* HRV & HR during sleep */}
+          {/* HRV & HR during sleep trends */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ScoreLineChart
               data={periods.map((p) => ({ day: p.day, score: p.average_hrv }))}
               dataKey="score"
-              title="HRV During Sleep"
+              title="HRV During Sleep (Trend)"
               color="#8b5cf6"
               gradientId="hrvGrad"
               unit=" ms"
@@ -182,34 +263,33 @@ export default function SleepPage() {
                 { key: "avg", color: "#f43f5e", name: "Avg HR" },
                 { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
               ]}
-              title="Heart Rate During Sleep"
+              title="Heart Rate During Sleep (Trend)"
               unit=" bpm"
             />
           </div>
 
           {/* Sleep contributors */}
-          {dailySleep.length > 0 && (
+          {selectedDailySleep?.contributors && (
             <div className="premium-card p-6">
               <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                Sleep Score Contributors (Latest)
+                Sleep Score Contributors
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                {dailySleep[dailySleep.length - 1]?.contributors &&
-                  Object.entries(dailySleep[dailySleep.length - 1].contributors).map(
-                    ([key, value]) => (
-                      <div key={key} className="text-center">
-                        <ScoreRing
-                          score={value as number}
-                          size={64}
-                          strokeWidth={5}
-                          className="mx-auto"
-                        />
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 capitalize">
-                          {key.replace(/_/g, " ")}
-                        </p>
-                      </div>
-                    )
-                  )}
+                {Object.entries(selectedDailySleep.contributors).map(
+                  ([key, value]) => (
+                    <div key={key} className="text-center">
+                      <ScoreRing
+                        score={value as number}
+                        size={64}
+                        strokeWidth={5}
+                        className="mx-auto"
+                      />
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 capitalize">
+                        {key.replace(/_/g, " ")}
+                      </p>
+                    </div>
+                  )
+                )}
               </div>
             </div>
           )}

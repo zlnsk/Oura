@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { DateRangeSelector } from "@/components/ui/DateRangeSelector";
+import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -12,6 +13,7 @@ import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { IntradayChart } from "@/components/charts/IntradayChart";
 import {
   Activity,
   Footprints,
@@ -21,6 +23,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
+import type { HeartRateEntry } from "@/types/oura";
 
 function getToday(): string {
   const d = new Date();
@@ -29,14 +32,42 @@ function getToday(): string {
 
 export default function ActivityPage() {
   const { data, loading, fetchData } = useOuraData();
+  const [selectedDate, setSelectedDate] = useState(getToday());
 
   useEffect(() => {
     if (!data) fetchData();
   }, [data, fetchData]);
 
   const activities = data?.activity || [];
-  const today = getToday();
-  const latest = activities.find((a) => a.day === today) || activities[activities.length - 1];
+  const selected = activities.find((a) => a.day === selectedDate);
+
+  // Intraday HR for selected date
+  const hrData = useMemo(() => {
+    if (!data?.heartRate) return [];
+    return data.heartRate
+      .filter((hr: HeartRateEntry) => hr.timestamp.startsWith(selectedDate))
+      .map((hr: HeartRateEntry) => ({
+        time: new Date(hr.timestamp).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+        value: hr.bpm,
+      }));
+  }, [data?.heartRate, selectedDate]);
+
+  // Intraday MET for selected date
+  const metData = useMemo(() => {
+    if (!selected?.met) return [];
+    const { interval, items, timestamp } = selected.met;
+    const start = new Date(timestamp);
+    const result: { time: string; value: number }[] = [];
+    for (let i = 0; i < items.length; i++) {
+      if (items[i] <= 0) continue;
+      const t = new Date(start.getTime() + i * interval * 1000);
+      result.push({
+        time: t.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: false }),
+        value: Math.round(items[i] * 10) / 10,
+      });
+    }
+    return result;
+  }, [selected?.met]);
 
   const avgSteps = average(activities.map((a) => a.steps));
   const avgCalories = average(activities.map((a) => a.total_calories));
@@ -50,7 +81,7 @@ export default function ActivityPage() {
         iconColor="#10b981"
         action={
           <div className="flex items-center gap-3">
-            <DateRangeSelector />
+            <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
             <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -63,51 +94,81 @@ export default function ActivityPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
-          {/* Overview */}
+          {/* Selected day overview */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
               <ScoreRing
-                score={latest?.score || 0}
+                score={selected?.score || 0}
                 size={140}
                 strokeWidth={10}
                 label="Activity Score"
               />
               <div className="grid grid-cols-2 gap-x-12 gap-y-4">
-                {latest && (
+                {selected ? (
                   <>
                     <div>
                       <p className="stat-label">Steps</p>
-                      <p className="text-xl font-bold mt-1">{latest.steps?.toLocaleString()}</p>
+                      <p className="text-xl font-bold mt-1">{selected.steps?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Total Calories</p>
-                      <p className="text-xl font-bold mt-1">{latest.total_calories?.toLocaleString()}</p>
+                      <p className="text-xl font-bold mt-1">{selected.total_calories?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Active Calories</p>
-                      <p className="text-xl font-bold mt-1">{latest.active_calories?.toLocaleString()}</p>
+                      <p className="text-xl font-bold mt-1">{selected.active_calories?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Walking Distance</p>
                       <p className="text-xl font-bold mt-1">
-                        {((latest.equivalent_walking_distance || 0) / 1000).toFixed(1)} km
+                        {((selected.equivalent_walking_distance || 0) / 1000).toFixed(1)} km
                       </p>
                     </div>
                     <div>
                       <p className="stat-label">High Activity</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(latest.high_activity_time || 0)}</p>
+                      <p className="text-xl font-bold mt-1">{formatDuration(selected.high_activity_time || 0)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Medium Activity</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(latest.medium_activity_time || 0)}</p>
+                      <p className="text-xl font-bold mt-1">{formatDuration(selected.medium_activity_time || 0)}</p>
                     </div>
                   </>
+                ) : (
+                  <div className="col-span-2 text-sm text-slate-400">No activity data for this date</div>
                 )}
               </div>
             </div>
           </div>
 
-          {/* Stats grid */}
+          {/* Intraday HR & MET charts */}
+          {(hrData.length > 0 || metData.length > 0) && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <IntradayChart
+                data={hrData}
+                title="Heart Rate"
+                color="#f43f5e"
+                unit=" bpm"
+                avgValue={hrData.length > 0 ? Math.round(hrData.reduce((s, d) => s + d.value, 0) / hrData.length) : undefined}
+                gradientId="actHRGrad"
+              />
+              <IntradayChart
+                data={metData}
+                title="MET (Metabolic Equivalent)"
+                color="#f59e0b"
+                unit=""
+                avgValue={metData.length > 0 ? Math.round(metData.reduce((s, d) => s + d.value, 0) / metData.length * 10) / 10 : undefined}
+                gradientId="actMETGrad"
+                domain={[0, 10]}
+              />
+            </div>
+          )}
+
+          {/* Trends */}
+          <div className="flex items-center justify-between">
+            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <DateRangeSelector />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label="Avg Daily Steps"
@@ -139,7 +200,7 @@ export default function ActivityPage() {
             />
             <StatCard
               label="Inactivity Alerts"
-              value={latest?.inactivity_alerts || 0}
+              value={selected?.inactivity_alerts || 0}
               icon={Target}
               color="#f43f5e"
             />
@@ -190,13 +251,13 @@ export default function ActivityPage() {
           />
 
           {/* Contributors */}
-          {latest?.contributors && (
+          {selected?.contributors && (
             <div className="premium-card p-6">
               <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
-                Activity Score Contributors (Latest)
+                Activity Score Contributors
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {Object.entries(latest.contributors).map(([key, value]) => (
+                {Object.entries(selected.contributors).map(([key, value]) => (
                   <div key={key} className="text-center">
                     <ScoreRing
                       score={value as number}
