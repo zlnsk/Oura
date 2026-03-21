@@ -98,11 +98,13 @@ function TodayProgress({
   todaySleepPeriod,
   todayActivity,
   todayReadiness,
+  aiSummary,
 }: {
   todaySleep: DailySleep | undefined;
   todaySleepPeriod: SleepPeriod | undefined;
   todayActivity: DailyActivity | undefined;
   todayReadiness: DailyReadiness | undefined;
+  aiSummary: AISummary | null;
 }) {
   const today = new Date();
   const dateStr = today.toLocaleDateString("en-US", {
@@ -251,6 +253,8 @@ function TodayProgress({
                 </div>
               </div>
             )}
+
+            <AIInsightBadge text={aiSummary?.sleep || ""} />
           </div>
         )}
 
@@ -274,6 +278,7 @@ function TodayProgress({
                 <ContributorBar label="Previous Night" value={todayReadiness.contributors.previous_night} />
                 <ContributorBar label="Activity Balance" value={todayReadiness.contributors.activity_balance} />
               </div>
+              <AIInsightBadge text={aiSummary?.readiness || ""} />
             </div>
           )}
 
@@ -319,6 +324,7 @@ function TodayProgress({
                 <ContributorBar label="Training Frequency" value={todayActivity.contributors.training_frequency} />
                 <ContributorBar label="Training Volume" value={todayActivity.contributors.training_volume} />
               </div>
+              <AIInsightBadge text={aiSummary?.activity || ""} />
             </div>
           )}
         </div>
@@ -327,14 +333,101 @@ function TodayProgress({
   );
 }
 
-function AISummarySection({ data }: { data: DashboardData }) {
-  const [summary, setSummary] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+interface AISummary {
+  overall: string;
+  sleep: string;
+  activity: string;
+  readiness: string;
+  tip: string;
+}
 
-  const fetchSummary = async () => {
-    setLoading(true);
-    setError(null);
+function AIInsightBadge({ text }: { text: string }) {
+  if (!text) return null;
+  return (
+    <div className="flex items-start gap-2 mt-3 p-3 rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 border border-violet-100 dark:border-violet-900/30">
+      <Sparkles className="w-3.5 h-3.5 text-violet-500 mt-0.5 shrink-0" />
+      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{text}</p>
+    </div>
+  );
+}
+
+function AISummarySection({ data, aiSummary, onFetch, loading, error }: {
+  data: DashboardData;
+  aiSummary: AISummary | null;
+  onFetch: () => void;
+  loading: boolean;
+  error: string | null;
+}) {
+  return (
+    <div className="premium-card overflow-hidden">
+      <div className="p-5 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet to-oura-500 flex items-center justify-center shadow-lg shadow-accent-violet/20">
+            <Sparkles className="w-4 h-4 text-white" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-sm">AI Health Summary</h3>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400">Powered by Claude</p>
+          </div>
+        </div>
+        <button
+          onClick={onFetch}
+          disabled={loading}
+          className="btn-primary text-xs px-3 py-1.5"
+        >
+          {loading ? (
+            <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Analyzing...</>
+          ) : aiSummary ? (
+            <><RefreshCw className="w-3.5 h-3.5" /> Refresh</>
+          ) : (
+            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
+          )}
+        </button>
+      </div>
+
+      {(error || loading || aiSummary) && (
+        <div className="px-5 pb-5">
+          {error && (
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-rose-600 dark:text-rose-400 text-xs">
+              {error}
+            </div>
+          )}
+          {loading && !aiSummary && (
+            <div className="space-y-2">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" style={{ width: `${90 - i * 15}%` }} />
+              ))}
+            </div>
+          )}
+          {aiSummary && (
+            <div className="space-y-3">
+              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                {aiSummary.overall}
+              </p>
+              {aiSummary.tip && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
+                  <Zap className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
+                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300">{aiSummary.tip}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const { data, loading, error, fetchData } = useOuraData();
+  const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError, setAiError] = useState<string | null>(null);
+
+  const fetchAiSummary = async () => {
+    if (!data) return;
+    setAiLoading(true);
+    setAiError(null);
     try {
       const res = await fetch("/api/ai-summary", {
         method: "POST",
@@ -346,97 +439,13 @@ function AISummarySection({ data }: { data: DashboardData }) {
         throw new Error(json.error || "Failed to generate summary");
       }
       const json = await res.json();
-      setSummary(json.summary);
+      setAiSummary(json.summary);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      setAiError(err instanceof Error ? err.message : "Unknown error");
     } finally {
-      setLoading(false);
+      setAiLoading(false);
     }
   };
-
-  return (
-    <div className="premium-card overflow-hidden">
-      <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent-violet to-oura-500 flex items-center justify-center shadow-lg shadow-accent-violet/20">
-            <Sparkles className="w-5 h-5 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold">AI Health Analysis</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Powered by Claude
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={fetchSummary}
-          disabled={loading}
-          className="btn-primary text-sm px-4 py-2"
-        >
-          {loading ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Analyzing...
-            </>
-          ) : summary ? (
-            <>
-              <RefreshCw className="w-4 h-4" />
-              Refresh
-            </>
-          ) : (
-            <>
-              <Sparkles className="w-4 h-4" />
-              Generate Analysis
-            </>
-          )}
-        </button>
-      </div>
-
-      <div className="p-6">
-        {error && (
-          <div className="p-4 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-rose-600 dark:text-rose-400 text-sm">
-            {error}
-          </div>
-        )}
-        {loading && !summary && (
-          <div className="space-y-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="h-4 bg-slate-200 dark:bg-slate-800 rounded animate-pulse"
-                style={{ width: `${85 - i * 8}%` }}
-              />
-            ))}
-          </div>
-        )}
-        {summary && (
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none prose-headings:text-base prose-headings:font-semibold prose-p:text-slate-600 dark:prose-p:text-slate-300 prose-li:text-slate-600 dark:prose-li:text-slate-300"
-            dangerouslySetInnerHTML={{
-              __html: summary
-                .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                .replace(/^### (.*$)/gm, '<h3 class="mt-4 mb-2">$1</h3>')
-                .replace(/^## (.*$)/gm, '<h2 class="mt-6 mb-3 text-lg">$1</h2>')
-                .replace(/^# (.*$)/gm, '<h1 class="mt-6 mb-3 text-xl">$1</h1>')
-                .replace(/^- (.*$)/gm, '<li class="ml-4">$1</li>')
-                .replace(/^(\d+)\. (.*$)/gm, '<li class="ml-4 list-decimal">$2</li>')
-                .replace(/\n\n/g, "<br/><br/>")
-                .replace(/\n/g, "<br/>"),
-            }}
-          />
-        )}
-        {!summary && !loading && !error && (
-          <p className="text-sm text-slate-400 dark:text-slate-500 text-center py-8">
-            Click &quot;Generate Analysis&quot; to get AI-powered insights about your health data
-          </p>
-        )}
-      </div>
-    </div>
-  );
-}
-
-export default function DashboardPage() {
-  const { data, loading, error, fetchData } = useOuraData();
 
   useEffect(() => {
     fetchData();
@@ -495,6 +504,7 @@ export default function DashboardPage() {
             todaySleepPeriod={todaySleepPeriod}
             todayActivity={todayActivity}
             todayReadiness={todayReadiness}
+            aiSummary={aiSummary}
           />
 
           {/* Score rings */}
@@ -640,7 +650,13 @@ export default function DashboardPage() {
           </div>
 
           {/* AI Summary */}
-          <AISummarySection data={data} />
+          <AISummarySection
+            data={data}
+            aiSummary={aiSummary}
+            onFetch={fetchAiSummary}
+            loading={aiLoading}
+            error={aiError}
+          />
         </div>
       )}
     </DashboardShell>

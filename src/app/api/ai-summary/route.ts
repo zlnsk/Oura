@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 2048,
+        max_tokens: 512,
         messages: [
           {
             role: "user",
@@ -46,9 +46,22 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await response.json();
-    const text = result.content?.[0]?.text || "No analysis available.";
+    const text = result.content?.[0]?.text || "{}";
 
-    return NextResponse.json({ summary: text });
+    try {
+      const parsed = JSON.parse(text);
+      return NextResponse.json({ summary: parsed });
+    } catch {
+      return NextResponse.json({
+        summary: {
+          overall: text,
+          sleep: "",
+          activity: "",
+          readiness: "",
+          tip: "",
+        },
+      });
+    }
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: message }, { status: 500 });
@@ -78,7 +91,7 @@ function buildAnalysisPrompt(data: Record<string, unknown>): string {
     `${s.day}: total=${Math.round(s.total_sleep_duration / 60)}min deep=${Math.round(s.deep_sleep_duration / 60)}min rem=${Math.round(s.rem_sleep_duration / 60)}min hrv=${s.average_hrv} hr=${s.average_heart_rate} lowest_hr=${s.lowest_heart_rate}`
   ).join(", ");
 
-  return `You are a health and wellness analyst. Analyze this Oura Ring data and provide personalized, actionable insights. Be specific with numbers and trends. Use a friendly but professional tone.
+  return `You are a concise health analyst for an Oura Ring dashboard. Analyze this data and respond with ONLY valid JSON (no markdown, no code fences).
 
 ## Sleep Scores (last 30 days)
 ${sleepScores || "No data"}
@@ -95,14 +108,12 @@ ${readinessScores || "No data"}
 ## Stress Data
 ${stressData || "No data"}
 
-Please provide:
-1. **Overall Health Summary** - A brief overview of the user's health trends
-2. **Sleep Analysis** - Deep dive into sleep quality, duration, HRV trends, and sleep stages
-3. **Activity Insights** - Step counts, calories, and movement patterns
-4. **Readiness & Recovery** - How well the body is recovering
-5. **Stress & Resilience** - Stress patterns and recovery
-6. **Top 3 Recommendations** - Specific, actionable advice based on the data
-7. **Areas of Concern** - Any red flags or areas needing attention
-
-Format with markdown headers and bullet points. Keep it concise but insightful.`;
+Respond with this exact JSON structure:
+{
+  "overall": "One concise paragraph (2-3 sentences max) summarizing the current health picture, key trends, and one actionable takeaway. Be specific with numbers.",
+  "sleep": "One sentence about last night / recent sleep quality and what stands out.",
+  "activity": "One sentence about recent activity level and movement patterns.",
+  "readiness": "One sentence about recovery status and body readiness.",
+  "tip": "One specific, actionable health tip based on the data."
+}`;
 }
