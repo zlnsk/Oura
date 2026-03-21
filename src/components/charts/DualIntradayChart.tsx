@@ -4,7 +4,7 @@ import { memo } from "react";
 import {
   ResponsiveContainer,
   ComposedChart,
-  Area,
+  Bar,
   Line,
   XAxis,
   YAxis,
@@ -69,12 +69,6 @@ export const DualIntradayChart = memo(function DualIntradayChart({
       )}
       <ResponsiveContainer width="100%" height={height}>
         <ComposedChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -10 }}>
-          <defs>
-            <linearGradient id="dualHRGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.2} />
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity={0} />
-            </linearGradient>
-          </defs>
           <CartesianGrid
             strokeDasharray="3 3"
             stroke={isDark ? "#1e293b" : "#e2e8f0"}
@@ -128,25 +122,21 @@ export const DualIntradayChart = memo(function DualIntradayChart({
             }}
             wrapperStyle={{ fontSize: 11 }}
           />
-          <Area
+          <Bar
+            yAxisId="met"
+            dataKey="met"
+            fill="#f59e0b"
+            fillOpacity={0.35}
+            radius={[1, 1, 0, 0]}
+          />
+          <Line
             yAxisId="hr"
             type="monotone"
             dataKey="hr"
             stroke="#f43f5e"
             strokeWidth={1.5}
-            fill="url(#dualHRGrad)"
             dot={false}
             activeDot={{ r: 3, fill: "#f43f5e" }}
-            connectNulls
-          />
-          <Line
-            yAxisId="met"
-            type="monotone"
-            dataKey="met"
-            stroke="#f59e0b"
-            strokeWidth={1.5}
-            dot={false}
-            activeDot={{ r: 3, fill: "#f59e0b" }}
             connectNulls
           />
         </ComposedChart>
