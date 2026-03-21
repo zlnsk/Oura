@@ -1,7 +1,49 @@
 "use client";
 
-import { createContext, useContext, useState, useCallback } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import type { DashboardData } from "@/types/oura";
+
+const CACHE_KEY = "oura_data_cache";
+const STALE_MS = 15 * 60 * 1000; // 15 minutes
+
+interface CacheEntry {
+  data: DashboardData;
+  days: number;
+  timestamp: number;
+}
+
+function readCache(days: number): DashboardData | null {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const entry: CacheEntry = JSON.parse(raw);
+    if (entry.days !== days) return null;
+    return entry.data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(data: DashboardData, days: number) {
+  try {
+    const entry: CacheEntry = { data, days, timestamp: Date.now() };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
+  } catch {
+    // storage full or unavailable — ignore
+  }
+}
+
+function isCacheStale(days: number): boolean {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return true;
+    const entry: CacheEntry = JSON.parse(raw);
+    if (entry.days !== days) return true;
+    return Date.now() - entry.timestamp > STALE_MS;
+  } catch {
+    return true;
+  }
+}
 
 interface OuraDataContextType {
   data: DashboardData | null;
@@ -10,6 +52,7 @@ interface OuraDataContextType {
   days: number;
   setDays: (days: number) => void;
   fetchData: () => Promise<void>;
+  lastUpdated: number | null;
 }
 
 const defaultData: DashboardData = {
@@ -37,6 +80,7 @@ const OuraDataContext = createContext<OuraDataContextType>({
   days: 30,
   setDays: () => {},
   fetchData: async () => {},
+  lastUpdated: null,
 });
 
 export function OuraDataProvider({ children }: { children: React.ReactNode }) {
@@ -44,6 +88,22 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
+  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const hydratedRef = useRef(false);
+
+  // Load cached data on mount
+  useEffect(() => {
+    if (hydratedRef.current) return;
+    hydratedRef.current = true;
+    const cached = readCache(days);
+    if (cached) {
+      setData({ ...defaultData, ...cached });
+      try {
+        const raw = localStorage.getItem(CACHE_KEY);
+        if (raw) setLastUpdated(JSON.parse(raw).timestamp);
+      } catch { /* ignore */ }
+    }
+  }, [days]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -55,7 +115,10 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
         throw new Error(json.error || "Failed to fetch data");
       }
       const json = await res.json();
-      setData({ ...defaultData, ...json });
+      const merged = { ...defaultData, ...json };
+      setData(merged);
+      writeCache(merged, days);
+      setLastUpdated(Date.now());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -65,7 +128,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <OuraDataContext.Provider
-      value={{ data, loading, error, days, setDays, fetchData }}
+      value={{ data, loading, error, days, setDays, fetchData, lastUpdated }}
     >
       {children}
     </OuraDataContext.Provider>

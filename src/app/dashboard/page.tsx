@@ -32,7 +32,8 @@ import { average, trend, formatDuration, getScoreColor, getScoreLabel } from "@/
 import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
 
 function getToday(): string {
-  return new Date().toISOString().split("T")[0];
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 function formatTime(isoString: string): string {
@@ -106,16 +107,21 @@ function TodayProgress({
   todayReadiness: DailyReadiness | undefined;
   aiSummary: AISummary | null;
 }) {
-  const today = new Date();
-  const dateStr = today.toLocaleDateString("en-US", {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-US", {
     weekday: "long",
     month: "long",
     day: "numeric",
   });
 
-  const hour = today.getHours();
+  const hour = now.getHours();
   const greeting =
     hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+
+  // Determine if we're showing today's data or the latest available
+  const dataDay = todaySleep?.day || todayActivity?.day || todayReadiness?.day;
+  const today = getToday();
+  const isToday = dataDay === today;
 
   const hasSleep = todaySleepPeriod && todaySleepPeriod.total_sleep_duration > 0;
   const hasActivity = todayActivity && todayActivity.score > 0;
@@ -134,7 +140,7 @@ function TodayProgress({
           </div>
         </div>
         <p className="text-sm text-slate-500 dark:text-slate-400 mt-3">
-          No data for today yet. Your progress will appear here once Oura syncs.
+          No data available yet. Your progress will appear here once Oura syncs.
         </p>
       </div>
     );
@@ -158,7 +164,14 @@ function TodayProgress({
             </div>
             <div>
               <h2 className="font-semibold text-lg">{greeting}</h2>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{dateStr}</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                {dateStr}
+                {!isToday && dataDay && (
+                  <span className="ml-2 text-amber-500">
+                    &middot; Showing data from {new Date(dataDay + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                  </span>
+                )}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-6">
@@ -419,7 +432,7 @@ function AISummarySection({ data, aiSummary, onFetch, loading, error }: {
 }
 
 export default function DashboardPage() {
-  const { data, loading, error, fetchData } = useOuraData();
+  const { data, loading, error, fetchData, lastUpdated } = useOuraData();
   const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -452,10 +465,11 @@ export default function DashboardPage() {
   }, [fetchData]);
 
   const today = getToday();
-  const todaySleep = data?.sleep?.find((s) => s.day === today);
-  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today);
-  const todayActivity = data?.activity?.find((a) => a.day === today);
-  const todayReadiness = data?.readiness?.find((r) => r.day === today);
+  // Use today's data if available, otherwise fall back to latest
+  const todaySleep = data?.sleep?.find((s) => s.day === today) || data?.sleep?.[data.sleep.length - 1];
+  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today) || data?.sleepPeriods?.[data.sleepPeriods.length - 1];
+  const todayActivity = data?.activity?.find((a) => a.day === today) || data?.activity?.[data.activity.length - 1];
+  const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.[data.readiness.length - 1];
 
   const latestSleep = data?.sleep?.[data.sleep.length - 1];
   const latestActivity = data?.activity?.[data.activity.length - 1];
@@ -479,11 +493,17 @@ export default function DashboardPage() {
         iconColor="#0c93e9"
         action={
           <div className="flex items-center gap-3">
+            {lastUpdated && (
+              <span className="text-[10px] text-slate-400 dark:text-slate-500 hidden sm:block">
+                Updated {new Date(lastUpdated).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+              </span>
+            )}
             <DateRangeSelector />
             <button
               onClick={fetchData}
               disabled={loading}
               className="btn-secondary text-sm px-3 py-2"
+              title="Refresh data from Oura"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
