@@ -91,18 +91,35 @@ function buildAnalysisPrompt(data: Record<string, unknown>): string {
     `${s.day}: total=${Math.round(s.total_sleep_duration / 60)}min deep=${Math.round(s.deep_sleep_duration / 60)}min rem=${Math.round(s.rem_sleep_duration / 60)}min hrv=${s.average_hrv} hr=${s.average_heart_rate} lowest_hr=${s.lowest_heart_rate}`
   ).join(", ");
 
-  return `You are a concise health analyst for an Oura Ring dashboard. Analyze this data and respond with ONLY valid JSON (no markdown, no code fences).
+  // Identify today's and last night's data
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const todaySleep = sleep.find(s => s.day === todayStr) || sleep[sleep.length - 1];
+  const todayActivity = activity.find(a => a.day === todayStr) || activity[activity.length - 1];
+  const todayReadiness = readiness.find(r => r.day === todayStr) || readiness[readiness.length - 1];
+  const lastNight = sleepPeriods.find(s => s.day === todayStr) || sleepPeriods[sleepPeriods.length - 1];
 
-## Sleep Scores (last 30 days)
+  const todaySection = [
+    todaySleep ? `Sleep score: ${todaySleep.score} (${todaySleep.day})` : null,
+    todayActivity ? `Activity score: ${(todayActivity as Record<string, unknown>).score}, steps: ${(todayActivity as Record<string, unknown>).steps}, calories: ${(todayActivity as Record<string, unknown>).total_calories} (${todayActivity.day})` : null,
+    todayReadiness ? `Readiness score: ${todayReadiness.score} (${todayReadiness.day})` : null,
+    lastNight ? `Last night: total=${Math.round(lastNight.total_sleep_duration / 60)}min deep=${Math.round(lastNight.deep_sleep_duration / 60)}min rem=${Math.round(lastNight.rem_sleep_duration / 60)}min hrv=${lastNight.average_hrv} hr=${lastNight.average_heart_rate} lowest_hr=${lastNight.lowest_heart_rate}` : null,
+  ].filter(Boolean).join("\n");
+
+  return `You are a concise health analyst for an Oura Ring dashboard. The user is checking their "Today" dashboard. Focus primarily on TODAY's data and last night's sleep. Use recent trends only for context. Respond with ONLY valid JSON (no markdown, no code fences).
+
+## Today's Data
+${todaySection || "No data yet today"}
+
+## Recent Sleep Scores (for trend context)
 ${sleepScores || "No data"}
 
-## Sleep Details (last 7 nights)
+## Recent Sleep Details (last 7 nights)
 ${sleepDetails || "No data"}
 
-## Activity Data
+## Recent Activity (for trend context)
 ${activityScores || "No data"}
 
-## Readiness Scores
+## Recent Readiness (for trend context)
 ${readinessScores || "No data"}
 
 ## Stress Data
@@ -110,10 +127,10 @@ ${stressData || "No data"}
 
 Respond with this exact JSON structure:
 {
-  "overall": "One concise paragraph (2-3 sentences max) summarizing the current health picture, key trends, and one actionable takeaway. Be specific with numbers.",
-  "sleep": "One sentence about last night / recent sleep quality and what stands out.",
-  "activity": "One sentence about recent activity level and movement patterns.",
-  "readiness": "One sentence about recovery status and body readiness.",
-  "tip": "One specific, actionable health tip based on the data."
+  "overall": "2-3 sentences about how today looks — last night's sleep quality, today's readiness, and what to focus on today. Be specific with numbers. Compare to recent averages briefly.",
+  "sleep": "One sentence about last night's sleep — what was good or concerning, with specific numbers (deep/REM time, HRV, HR).",
+  "activity": "One sentence about today's activity progress so far and what to aim for.",
+  "readiness": "One sentence about today's recovery status and how ready the body is.",
+  "tip": "One specific, actionable tip for TODAY based on the data."
 }`;
 }

@@ -24,7 +24,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Today" },
   { href: "/sleep", icon: BedDouble, label: "Sleep" },
   { href: "/activity", icon: Activity, label: "Activity" },
   { href: "/readiness", icon: Zap, label: "Readiness" },
