@@ -30,7 +30,9 @@ export default function SleepPage() {
     if (!data) fetchData();
   }, [data, fetchData]);
 
-  const periods = data?.sleepPeriods || [];
+  const allPeriods = data?.sleepPeriods || [];
+  // Filter to long_sleep only for main charts (excludes naps, rest periods)
+  const periods = allPeriods.filter((p) => p.type === "long_sleep");
   const dailySleep = data?.sleep || [];
   const latest = periods[periods.length - 1];
 

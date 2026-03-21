@@ -309,7 +309,7 @@ function TodayProgress({
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="w-4 h-4 text-amber-400" />
                 <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
-                  Today&apos;s Activity
+                  Yesterday&apos;s Activity
                 </h3>
               </div>
 
@@ -474,11 +474,14 @@ export default function DashboardPage() {
 
   const today = getToday();
   const yesterday = getYesterday();
-  // Strictly match today's data — sleep/readiness also check yesterday (last night)
+  // Sleep/readiness: check today first, then yesterday (last night's data)
   const todaySleep = data?.sleep?.find((s) => s.day === today) || data?.sleep?.find((s) => s.day === yesterday);
-  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today) || data?.sleepPeriods?.find((s) => s.day === yesterday);
-  const todayActivity = data?.activity?.find((a) => a.day === today);
+  // Only use long_sleep periods (skip naps/rest)
+  const todaySleepPeriod = data?.sleepPeriods?.find((s) => s.day === today && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === yesterday && s.type === "long_sleep");
   const todayReadiness = data?.readiness?.find((r) => r.day === today) || data?.readiness?.find((r) => r.day === yesterday);
+  // Activity: Oura API pre-populates today with stale projected values.
+  // Use yesterday's completed data which is accurate.
+  const todayActivity = data?.activity?.find((a) => a.day === yesterday);
 
   const sleepScores = data?.sleep?.map((s) => s.score).filter(Boolean) || [];
   const avgSteps = average(data?.activity?.map((a) => a.steps) || []);
@@ -557,28 +560,28 @@ export default function DashboardPage() {
               icon={Footprints}
               color="#10b981"
               trend={trend(data.activity.map((a) => a.steps))}
-              trendLabel={`Today ${todayActivity?.steps?.toLocaleString() || "--"}`}
+              trendLabel={`Yesterday ${todayActivity?.steps?.toLocaleString() || "--"}`}
               trendPositive={trend(data.activity.map((a) => a.steps)) === "up"}
             />
             <StatCard
               label="Avg Resting HR"
-              value={average(data.sleepPeriods.map((s) => s.average_heart_rate)) || "--"}
+              value={average(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate)) || "--"}
               unit="bpm"
               icon={Heart}
               color="#f43f5e"
-              trend={trend(data.sleepPeriods.map((s) => s.average_heart_rate))}
+              trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate))}
               trendLabel={`Last night ${todaySleepPeriod?.average_heart_rate || "--"}`}
-              trendPositive={trend(data.sleepPeriods.map((s) => s.average_heart_rate)) === "down"}
+              trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate)) === "down"}
             />
             <StatCard
               label="Avg HRV"
-              value={average(data.sleepPeriods.map((s) => s.average_hrv)) || "--"}
+              value={average(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv)) || "--"}
               unit="ms"
               icon={Wind}
               color="#8b5cf6"
-              trend={trend(data.sleepPeriods.map((s) => s.average_hrv))}
+              trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv))}
               trendLabel={`Last night ${todaySleepPeriod?.average_hrv || "--"}`}
-              trendPositive={trend(data.sleepPeriods.map((s) => s.average_hrv)) === "up"}
+              trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv)) === "up"}
             />
           </div>
 
