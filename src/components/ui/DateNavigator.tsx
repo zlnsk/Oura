@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useOuraData } from "@/components/layout/OuraDataProvider";
 
 type Granularity = "day" | "week" | "month" | "year";
 
@@ -17,6 +18,14 @@ const granularities: { label: string; value: Granularity }[] = [
   { label: "M", value: "month" },
   { label: "Y", value: "year" },
 ];
+
+// Minimum days to fetch for each granularity so the user has enough data
+const granularityDays: Record<Granularity, number> = {
+  day: 30,
+  week: 30,
+  month: 90,
+  year: 365,
+};
 
 function shiftDate(dateStr: string, granularity: Granularity, direction: -1 | 1): string {
   const d = new Date(dateStr + "T12:00:00"); // noon to avoid DST issues
@@ -51,12 +60,37 @@ function formatDisplayDate(dateStr: string): string {
   return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
 }
 
+function daysBetween(dateStr: string, todayStr: string): number {
+  const d = new Date(dateStr + "T12:00:00");
+  const t = new Date(todayStr + "T12:00:00");
+  return Math.round((t.getTime() - d.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps) {
   const [granularity, setGranularity] = useState<Granularity>("day");
+  const { days, setDays } = useOuraData();
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
   const isToday = selectedDate === todayStr;
+
+  // When granularity changes, ensure we have enough data loaded
+  const handleGranularityChange = (g: Granularity) => {
+    setGranularity(g);
+    const minDays = granularityDays[g];
+    if (days < minDays) {
+      setDays(minDays);
+    }
+  };
+
+  // When navigating to a date outside the loaded range, auto-expand
+  useEffect(() => {
+    const daysBack = daysBetween(selectedDate, todayStr);
+    if (daysBack > 0 && daysBack > days) {
+      // Expand to cover the selected date plus some buffer
+      setDays(Math.min(365, daysBack + 7));
+    }
+  }, [selectedDate, todayStr, days, setDays]);
 
   return (
     <div className="flex items-center gap-2">
@@ -104,7 +138,7 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
         {granularities.map(({ label, value }) => (
           <button
             key={value}
-            onClick={() => setGranularity(value)}
+            onClick={() => handleGranularityChange(value)}
             className={cn(
               "px-2 py-1 text-[10px] font-bold rounded-lg transition-all duration-200 uppercase",
               granularity === value

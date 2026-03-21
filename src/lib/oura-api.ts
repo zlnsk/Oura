@@ -35,6 +35,10 @@ export async function fetchPersonalInfo(token: string) {
   return res.json();
 }
 
+function toLocalDateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 export function getDateRange(days: number) {
   const end = new Date();
   const start = new Date();
@@ -43,8 +47,8 @@ export function getDateRange(days: number) {
   const endInclusive = new Date(end);
   endInclusive.setDate(endInclusive.getDate() + 1);
   return {
-    start_date: start.toISOString().split("T")[0],
-    end_date: endInclusive.toISOString().split("T")[0],
+    start_date: toLocalDateStr(start),
+    end_date: toLocalDateStr(endInclusive),
   };
 }
 

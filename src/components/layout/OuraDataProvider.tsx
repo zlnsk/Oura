@@ -85,7 +85,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [days, setDays] = useState(7);
+  const [days, setDays] = useState(30);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
   const hydratedRef = useRef(false);
 
