@@ -331,7 +331,7 @@ function TodayProgress({
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
                   <Flame className="w-3.5 h-3.5 text-orange-500 mb-1" />
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Calories</p>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Total Burn</p>
                   <p className="text-sm font-bold">{todayActivity.total_calories.toLocaleString()}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">

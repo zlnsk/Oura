@@ -141,7 +141,7 @@ export default function ActivityPage() {
                       <p className="text-xl font-bold mt-1">{selected.steps?.toLocaleString()}</p>
                     </div>
                     <div>
-                      <p className="stat-label">Total Calories</p>
+                      <p className="stat-label">Total Burn (incl. BMR)</p>
                       <p className="text-xl font-bold mt-1">{selected.total_calories?.toLocaleString()}</p>
                     </div>
                     <div>
