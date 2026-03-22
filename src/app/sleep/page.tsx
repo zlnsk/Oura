@@ -77,15 +77,9 @@ export default function SleepPage() {
   const periods = allPeriods.filter((p) => p.type === "long_sleep");
   const dailySleep = data?.sleep || [];
 
-  // Find selected day's sleep data (check selected date and previous day)
-  const prevDate = useMemo(() => {
-    const d = new Date(selectedDate + "T12:00:00");
-    d.setDate(d.getDate() - 1);
-    return getDateStr(d);
-  }, [selectedDate]);
-
-  const selectedPeriod = periods.find((p) => p.day === selectedDate) || periods.find((p) => p.day === prevDate);
-  const selectedDailySleep = dailySleep.find((s) => s.day === selectedDate) || dailySleep.find((s) => s.day === prevDate);
+  // Find selected day's sleep data (strict match, no fallback to avoid stale data)
+  const selectedPeriod = periods.find((p) => p.day === selectedDate);
+  const selectedDailySleep = dailySleep.find((s) => s.day === selectedDate);
 
   // Intraday HR/HRV for selected night
   const sleepHR = useMemo(() => selectedPeriod ? buildIntradayHR(selectedPeriod) : [], [selectedPeriod]);

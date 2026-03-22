@@ -498,18 +498,18 @@ export default function DashboardPage() {
     return getDateStr(d);
   }, [selectedDate]);
 
-  // Sleep/readiness: selected date first, then previous day (last night's data)
+  // Sleep/readiness: strictly selected date only (no fallback to avoid showing stale data)
   const todaySleep = useMemo(
-    () => data?.sleep?.find((s) => s.day === selectedDate) || data?.sleep?.find((s) => s.day === prevDate),
-    [data, selectedDate, prevDate]
+    () => data?.sleep?.find((s) => s.day === selectedDate),
+    [data, selectedDate]
   );
   const todaySleepPeriod = useMemo(
-    () => data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep") || data?.sleepPeriods?.find((s) => s.day === prevDate && s.type === "long_sleep"),
-    [data, selectedDate, prevDate]
+    () => data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep"),
+    [data, selectedDate]
   );
   const todayReadiness = useMemo(
-    () => data?.readiness?.find((r) => r.day === selectedDate) || data?.readiness?.find((r) => r.day === prevDate),
-    [data, selectedDate, prevDate]
+    () => data?.readiness?.find((r) => r.day === selectedDate),
+    [data, selectedDate]
   );
   // Activity: strictly selected date only
   const todayActivity = useMemo(
