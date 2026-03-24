@@ -2,6 +2,38 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
+// Simple in-memory rate limiter per user email
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
+const DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "5", 10);
+
+function checkRateLimit(email: string): { allowed: boolean; remaining: number } {
+  const now = Date.now();
+  const entry = rateLimitMap.get(email);
+
+  if (!entry || now > entry.resetAt) {
+    // Reset at midnight UTC
+    const tomorrow = new Date();
+    tomorrow.setUTCHours(24, 0, 0, 0);
+    rateLimitMap.set(email, { count: 1, resetAt: tomorrow.getTime() });
+    return { allowed: true, remaining: DAILY_LIMIT - 1 };
+  }
+
+  if (entry.count >= DAILY_LIMIT) {
+    return { allowed: false, remaining: 0 };
+  }
+
+  entry.count++;
+  return { allowed: true, remaining: DAILY_LIMIT - entry.count };
+}
+
+// Clean up stale entries periodically
+setInterval(() => {
+  const now = Date.now();
+  rateLimitMap.forEach((entry, key) => {
+    if (now > entry.resetAt) rateLimitMap.delete(key);
+  });
+}, 60 * 60 * 1000); // every hour
+
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -11,8 +43,18 @@ export async function POST(req: NextRequest) {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
     return NextResponse.json(
-      { error: "Anthropic API key not configured on server" },
-      { status: 500 }
+      { error: "AI summaries are not available on this instance" },
+      { status: 501 }
+    );
+  }
+
+  // Rate limit per user
+  const userEmail = session.user?.email || "unknown";
+  const { allowed, remaining } = checkRateLimit(userEmail);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: `Daily AI summary limit reached (${DAILY_LIMIT}/day). Resets at midnight UTC.` },
+      { status: 429 }
     );
   }
 
@@ -50,7 +92,7 @@ export async function POST(req: NextRequest) {
 
     try {
       const parsed = JSON.parse(text);
-      return NextResponse.json({ summary: parsed });
+      return NextResponse.json({ summary: parsed, remaining });
     } catch {
       return NextResponse.json({
         summary: {
@@ -60,6 +102,7 @@ export async function POST(req: NextRequest) {
           readiness: "",
           tip: "",
         },
+        remaining,
       });
     }
   } catch (error) {

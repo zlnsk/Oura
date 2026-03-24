@@ -297,7 +297,7 @@ export default function SettingsPage() {
               <ul className="mt-2 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
                 <li>• Your Oura API key is stored as a secure, HTTP-only browser cookie</li>
                 <li>• Keys are never stored on the server or in any database</li>
-                <li>• Access is restricted to authorized Gmail addresses only</li>
+                <li>• Each user&apos;s data is fully isolated — no one else can see your data</li>
                 <li>• AI analysis is processed through Anthropic&apos;s API with no data retention</li>
                 <li>• All API calls are made server-side to protect your token</li>
               </ul>

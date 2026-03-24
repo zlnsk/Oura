@@ -1,11 +1,6 @@
 import { type NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 
-const allowedEmails = (process.env.ALLOWED_EMAILS || "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
-
 export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
@@ -14,9 +9,9 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async signIn({ user }) {
-      if (allowedEmails.length === 0) return true;
-      return allowedEmails.includes(user.email?.toLowerCase() || "");
+    async signIn() {
+      // Open to all Google accounts
+      return true;
     },
     async session({ session }) {
       return session;

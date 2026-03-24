@@ -79,7 +79,7 @@ export default function LoginPage() {
             </button>
 
             <p className="text-xs text-center text-slate-400 dark:text-slate-500 mt-4">
-              Only authorized email addresses can access this dashboard
+              Sign in with any Google account to get started
             </p>
           </div>
         </div>
