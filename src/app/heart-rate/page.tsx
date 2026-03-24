@@ -50,8 +50,13 @@ export default function HeartRatePage() {
       .sort((a, b) => a.day.localeCompare(b.day));
   }, [heartRate]);
 
-  // HR distribution
+  // Selected day's data
+  const selectedSleepPeriod = sleepPeriods.find((s) => s.day === selectedDate && s.type === "long_sleep");
+  const selectedDayHR = dailyHR.find((d) => d.day === selectedDate);
+
+  // HR distribution for selected day only
   const hrDistribution = useMemo(() => {
+    const dayReadings = heartRate.filter((hr) => hr.timestamp.startsWith(selectedDate));
     const ranges = [
       { label: "<50", min: 0, max: 50 },
       { label: "50-60", min: 50, max: 60 },
@@ -63,14 +68,9 @@ export default function HeartRatePage() {
     ];
     return ranges.map(({ label, min, max }) => ({
       day: label,
-      count: heartRate.filter((hr) => hr.bpm >= min && hr.bpm < max).length,
+      count: dayReadings.filter((hr) => hr.bpm >= min && hr.bpm < max).length,
     }));
-  }, [heartRate]);
-
-  const avgRestingHR = average(sleepPeriods.map((s) => s.average_heart_rate));
-  const avgLowestHR = average(sleepPeriods.map((s) => s.lowest_heart_rate));
-  const avgHRV = average(sleepPeriods.map((s) => s.average_hrv));
-  const overallAvg = average(dailyHR.map((d) => d.avg));
+  }, [heartRate, selectedDate]);
 
   return (
     <DashboardShell>
@@ -98,38 +98,38 @@ export default function HeartRatePage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Avg Resting HR"
-              value={avgRestingHR}
+              label="Resting HR"
+              value={selectedSleepPeriod?.average_heart_rate || "--"}
               unit="bpm"
               icon={Heart}
               color="#f43f5e"
-              trend={trend(sleepPeriods.map((s) => s.average_heart_rate))}
-              trendPositive={trend(sleepPeriods.map((s) => s.average_heart_rate)) === "down"}
+              trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_heart_rate))}
+              trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_heart_rate)) === "down"}
             />
             <StatCard
-              label="Avg Lowest HR"
-              value={avgLowestHR}
+              label="Lowest HR"
+              value={selectedSleepPeriod?.lowest_heart_rate || "--"}
               unit="bpm"
               icon={TrendingDown}
               color="#06b6d4"
-              trend={trend(sleepPeriods.map((s) => s.lowest_heart_rate))}
-              trendPositive={trend(sleepPeriods.map((s) => s.lowest_heart_rate)) === "down"}
+              trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.lowest_heart_rate))}
+              trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.lowest_heart_rate)) === "down"}
             />
             <StatCard
-              label="Avg Daytime HR"
-              value={overallAvg}
+              label="Daytime HR"
+              value={selectedDayHR?.avg || "--"}
               unit="bpm"
               icon={Activity}
               color="#f59e0b"
             />
             <StatCard
-              label="Avg HRV"
-              value={avgHRV}
+              label="HRV"
+              value={selectedSleepPeriod?.average_hrv || "--"}
               unit="ms"
               icon={Wind}
               color="#8b5cf6"
-              trend={trend(sleepPeriods.map((s) => s.average_hrv))}
-              trendPositive={trend(sleepPeriods.map((s) => s.average_hrv)) === "up"}
+              trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_hrv))}
+              trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_hrv)) === "up"}
             />
           </div>
 
