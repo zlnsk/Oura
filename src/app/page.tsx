@@ -84,42 +84,51 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Feature cards */}
-        <div className="animate-slide-up grid grid-cols-1 md:grid-cols-3 gap-4 mt-16 max-w-2xl w-full" style={{ animationDelay: "0.2s" }}>
-          {[
-            {
-              icon: BarChart3,
-              title: "Comprehensive Data",
-              desc: "Sleep, activity, readiness, HRV, and more",
-              color: "#0c93e9",
-            },
-            {
-              icon: Zap,
-              title: "AI Insights",
-              desc: "Personalized health analysis and recommendations",
-              color: "#8b5cf6",
-            },
-            {
-              icon: Shield,
-              title: "Secure & Private",
-              desc: "Your data stays protected with cookie-based keys",
-              color: "#10b981",
-            },
-          ].map(({ icon: Icon, title, desc, color }) => (
-            <div
-              key={title}
-              className="glass-card p-5 text-center group cursor-default glass-card-hover"
-            >
+        {/* What you need */}
+        <div className="animate-slide-up mt-16 max-w-2xl w-full" style={{ animationDelay: "0.2s" }}>
+          <h2 className="text-sm font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider text-center mb-4">What you need</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                icon: BarChart3,
+                title: "Google Account",
+                desc: "Sign in with any Gmail or Google account",
+                color: "#0c93e9",
+                badge: "Required",
+              },
+              {
+                icon: Shield,
+                title: "Oura API Key",
+                desc: "Personal access token from cloud.ouraring.com",
+                color: "#10b981",
+                badge: "Required",
+              },
+              {
+                icon: Zap,
+                title: "Anthropic API Key",
+                desc: "For AI-powered health summaries (set by host)",
+                color: "#8b5cf6",
+                badge: "Optional",
+              },
+            ].map(({ icon: Icon, title, desc, color, badge }) => (
               <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110"
-                style={{ backgroundColor: `${color}15`, color }}
+                key={title}
+                className="glass-card p-5 text-center group cursor-default glass-card-hover relative"
               >
-                <Icon className="w-5 h-5" />
+                <span className={`absolute top-3 right-3 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${badge === "Required" ? "bg-oura-500/10 text-oura-500" : "bg-slate-500/10 text-slate-400 dark:text-slate-500"}`}>
+                  {badge}
+                </span>
+                <div
+                  className="w-10 h-10 rounded-xl flex items-center justify-center mx-auto mb-3 transition-transform group-hover:scale-110"
+                  style={{ backgroundColor: `${color}15`, color }}
+                >
+                  <Icon className="w-5 h-5" />
+                </div>
+                <h3 className="text-sm font-semibold mb-1">{title}</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
               </div>
-              <h3 className="text-sm font-semibold mb-1">{title}</h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">{desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
