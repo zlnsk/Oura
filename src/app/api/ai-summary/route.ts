@@ -40,10 +40,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const anthropicKey = process.env.ANTHROPIC_API_KEY;
+  // Check for user-provided key first (cookie), then fall back to server env
+  const userKey = req.cookies.get("anthropic_api_key")?.value;
+  const anthropicKey = userKey || process.env.ANTHROPIC_API_KEY;
   if (!anthropicKey) {
     return NextResponse.json(
-      { error: "AI summaries are not available on this instance" },
+      { error: "No AI API key configured. Add your Anthropic API key in Settings, or ask the instance admin to set ANTHROPIC_API_KEY." },
       { status: 501 }
     );
   }
