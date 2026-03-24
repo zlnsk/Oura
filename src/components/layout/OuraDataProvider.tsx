@@ -22,12 +22,6 @@ function readCacheEntry(): CacheEntry | null {
   }
 }
 
-function readCache(days: number): DashboardData | null {
-  const entry = readCacheEntry();
-  if (!entry || entry.days !== days) return null;
-  return entry.data;
-}
-
 function writeCache(data: DashboardData, days: number) {
   try {
     const entry: CacheEntry = { data, days, timestamp: Date.now() };
@@ -37,11 +31,6 @@ function writeCache(data: DashboardData, days: number) {
   }
 }
 
-function isCacheStale(days: number): boolean {
-  const entry = readCacheEntry();
-  if (!entry || entry.days !== days) return true;
-  return Date.now() - entry.timestamp > STALE_MS;
-}
 
 interface OuraDataContextType {
   data: DashboardData | null;

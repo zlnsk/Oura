@@ -13,7 +13,7 @@ import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
 import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { Heart, TrendingDown, Activity, Wind, RefreshCw } from "lucide-react";
-import { average, trend } from "@/lib/utils";
+import { trend } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {

@@ -40,12 +40,6 @@ function getToday(): string {
   return getDateStr(new Date());
 }
 
-function getYesterday(): string {
-  const d = new Date();
-  d.setDate(d.getDate() - 1);
-  return getDateStr(d);
-}
-
 function formatTime(isoString: string): string {
   const d = new Date(isoString);
   return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });

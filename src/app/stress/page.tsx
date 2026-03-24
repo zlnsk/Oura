@@ -11,9 +11,8 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
 import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { Brain, Shield, Gauge, Wind, RefreshCw } from "lucide-react";
-import { average, trend } from "@/lib/utils";
+import { average } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
