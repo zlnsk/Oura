@@ -23,6 +23,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
+import { AISummaryCard } from "@/components/ui/AISummaryCard";
 import type { SleepPeriod } from "@/types/oura";
 
 function getDateStr(date: Date): string {
@@ -112,6 +113,8 @@ export default function SleepPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          <AISummaryCard page="sleep" data={data} />
+
           {/* Selected night overview */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">

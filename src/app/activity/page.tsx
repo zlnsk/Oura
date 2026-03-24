@@ -23,6 +23,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
+import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
   const d = new Date();
@@ -124,6 +125,8 @@ export default function ActivityPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          <AISummaryCard page="activity" data={data} />
+
           {/* Selected day overview */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">

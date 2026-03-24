@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth";
 
 // Simple in-memory rate limiter per user email
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
-const DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "5", 10);
+const DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "20", 10);
 
 function checkRateLimit(email: string): { allowed: boolean; remaining: number } {
   const now = Date.now();
@@ -60,9 +60,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const { data } = await req.json();
+  const { data, page } = await req.json();
+  const pageType = (page as string) || "dashboard";
 
-  const prompt = buildAnalysisPrompt(data);
+  const prompt = buildPrompt(data, pageType);
 
   try {
     const response = await fetch("https://api.anthropic.com/v1/messages", {
@@ -116,30 +117,74 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function buildAnalysisPrompt(data: Record<string, unknown>): string {
-  const sleep = data.sleep as Array<{ day: string; score: number }> || [];
-  const activity = data.activity as Array<{ day: string; score: number; steps: number; total_calories: number }> || [];
-  const readiness = data.readiness as Array<{ day: string; score: number }> || [];
-  const stress = data.stress as Array<{ day: string; stress_high: number; recovery_high: number }> || [];
-  const sleepPeriods = data.sleepPeriods as Array<{
-    day: string;
-    total_sleep_duration: number;
-    deep_sleep_duration: number;
-    rem_sleep_duration: number;
-    average_hrv: number;
-    average_heart_rate: number;
-    lowest_heart_rate: number;
-  }> || [];
+// ---- Data extraction helpers ----
 
-  const sleepScores = sleep.map((s) => `${s.day}: ${s.score}`).join(", ");
-  const activityScores = activity.map((a) => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories}`).join(", ");
-  const readinessScores = readiness.map((r) => `${r.day}: ${r.score}`).join(", ");
-  const stressData = stress.map((s) => `${s.day}: stress_high=${s.stress_high} recovery=${s.recovery_high}`).join(", ");
-  const sleepDetails = sleepPeriods.slice(-7).map((s) =>
-    `${s.day}: total=${Math.round(s.total_sleep_duration / 60)}min deep=${Math.round(s.deep_sleep_duration / 60)}min rem=${Math.round(s.rem_sleep_duration / 60)}min hrv=${s.average_hrv} hr=${s.average_heart_rate} lowest_hr=${s.lowest_heart_rate}`
-  ).join(", ");
+type DataRecord = Record<string, unknown>;
 
-  // Identify today's and last night's data
+function extractSleep(data: DataRecord) {
+  return (data.sleep as Array<{ day: string; score: number }>) || [];
+}
+function extractActivity(data: DataRecord) {
+  return (data.activity as Array<{ day: string; score: number; steps: number; total_calories: number; active_calories: number; high_activity_time: number; medium_activity_time: number; low_activity_time: number; equivalent_walking_distance: number }>) || [];
+}
+function extractReadiness(data: DataRecord) {
+  return (data.readiness as Array<{ day: string; score: number; temperature_deviation: number; temperature_trend_deviation: number; contributors: Record<string, number> }>) || [];
+}
+function extractStress(data: DataRecord) {
+  return (data.stress as Array<{ day: string; stress_high: number; recovery_high: number; daytime_recovery: number; day_summary: string }>) || [];
+}
+function extractSleepPeriods(data: DataRecord) {
+  return (data.sleepPeriods as Array<{
+    day: string; total_sleep_duration: number; deep_sleep_duration: number; rem_sleep_duration: number;
+    light_sleep_duration: number; awake_time: number; average_hrv: number; average_heart_rate: number;
+    lowest_heart_rate: number; efficiency: number; bedtime_start: string; bedtime_end: string;
+  }>) || [];
+}
+function extractWorkouts(data: DataRecord) {
+  return (data.workouts as Array<{ day: string; activity: string; calories: number; distance: number; intensity: string; start_datetime: string; end_datetime: string }>) || [];
+}
+function extractSpo2(data: DataRecord) {
+  return (data.spo2 as Array<{ day: string; spo2_percentage: { average: number } }>) || [];
+}
+function extractCardiovascularAge(data: DataRecord) {
+  return (data.cardiovascularAge as Array<{ day: string; vascular_age: number }>) || [];
+}
+
+function formatSleepDetails(periods: ReturnType<typeof extractSleepPeriods>, count = 7) {
+  return periods.slice(-count).map((s) =>
+    `${s.day}: total=${Math.round(s.total_sleep_duration / 60)}min deep=${Math.round(s.deep_sleep_duration / 60)}min rem=${Math.round(s.rem_sleep_duration / 60)}min light=${Math.round(s.light_sleep_duration / 60)}min awake=${Math.round(s.awake_time / 60)}min efficiency=${s.efficiency}% hrv=${s.average_hrv} hr=${s.average_heart_rate} lowest_hr=${s.lowest_heart_rate}`
+  ).join("\n");
+}
+
+// ---- Prompt builders per page ----
+
+function buildPrompt(data: DataRecord, page: string): string {
+  switch (page) {
+    case "sleep": return buildSleepPrompt(data);
+    case "activity": return buildActivityPrompt(data);
+    case "readiness": return buildReadinessPrompt(data);
+    case "heart-rate": return buildHeartRatePrompt(data);
+    case "stress": return buildStressPrompt(data);
+    case "workouts": return buildWorkoutsPrompt(data);
+    default: return buildDashboardPrompt(data);
+  }
+}
+
+function jsonInstructions() {
+  return `Respond with ONLY valid JSON (no markdown, no code fences):
+{
+  "overall": "2-3 concise sentences with specific numbers from the data. Focus on what stands out and actionable observations.",
+  "tip": "One specific, actionable tip based on the data."
+}`;
+}
+
+function buildDashboardPrompt(data: DataRecord): string {
+  const sleep = extractSleep(data);
+  const activity = extractActivity(data);
+  const readiness = extractReadiness(data);
+  const stress = extractStress(data);
+  const sleepPeriods = extractSleepPeriods(data);
+
   const todayStr = new Date().toISOString().slice(0, 10);
   const todaySleep = sleep.find(s => s.day === todayStr) || sleep[sleep.length - 1];
   const todayActivity = activity.find(a => a.day === todayStr) || activity[activity.length - 1];
@@ -148,37 +193,123 @@ function buildAnalysisPrompt(data: Record<string, unknown>): string {
 
   const todaySection = [
     todaySleep ? `Sleep score: ${todaySleep.score} (${todaySleep.day})` : null,
-    todayActivity ? `Activity score: ${(todayActivity as Record<string, unknown>).score}, steps: ${(todayActivity as Record<string, unknown>).steps}, calories: ${(todayActivity as Record<string, unknown>).total_calories} (${todayActivity.day})` : null,
+    todayActivity ? `Activity score: ${todayActivity.score}, steps: ${todayActivity.steps}, calories: ${todayActivity.total_calories} (${todayActivity.day})` : null,
     todayReadiness ? `Readiness score: ${todayReadiness.score} (${todayReadiness.day})` : null,
     lastNight ? `Last night: total=${Math.round(lastNight.total_sleep_duration / 60)}min deep=${Math.round(lastNight.deep_sleep_duration / 60)}min rem=${Math.round(lastNight.rem_sleep_duration / 60)}min hrv=${lastNight.average_hrv} hr=${lastNight.average_heart_rate} lowest_hr=${lastNight.lowest_heart_rate}` : null,
   ].filter(Boolean).join("\n");
 
-  return `You are a concise health analyst for an Oura Ring dashboard. The user is checking their "Today" dashboard. Focus primarily on TODAY's data and last night's sleep. Use recent trends only for context. Respond with ONLY valid JSON (no markdown, no code fences).
+  return `You are a concise health analyst for an Oura Ring dashboard. The user is on the "Today" overview. Focus on TODAY's data. Use recent trends only for context. ${jsonInstructions()}
+
+Also include these additional fields in the JSON:
+  "sleep": "One sentence about last night's sleep with specific numbers.",
+  "activity": "One sentence about today's activity progress.",
+  "readiness": "One sentence about today's recovery status."
 
 ## Today's Data
 ${todaySection || "No data yet today"}
 
-## Recent Sleep Scores (for trend context)
-${sleepScores || "No data"}
+## Recent Sleep (last 7 nights)
+${formatSleepDetails(sleepPeriods)}
 
-## Recent Sleep Details (last 7 nights)
-${sleepDetails || "No data"}
+## Recent Activity
+${activity.slice(-7).map(a => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories}`).join("\n") || "No data"}
 
-## Recent Activity (for trend context)
-${activityScores || "No data"}
+## Recent Readiness
+${readiness.slice(-7).map(r => `${r.day}: ${r.score}`).join(", ") || "No data"}
 
-## Recent Readiness (for trend context)
-${readinessScores || "No data"}
+## Stress
+${stress.slice(-7).map(s => `${s.day}: stress=${s.stress_high}min recovery=${s.recovery_high}min`).join(", ") || "No data"}`;
+}
 
-## Stress Data
-${stressData || "No data"}
+function buildSleepPrompt(data: DataRecord): string {
+  const sleep = extractSleep(data);
+  const sleepPeriods = extractSleepPeriods(data);
 
-Respond with this exact JSON structure:
-{
-  "overall": "2-3 sentences about how today looks — last night's sleep quality, today's readiness, and what to focus on today. Be specific with numbers. Compare to recent averages briefly.",
-  "sleep": "One sentence about last night's sleep — what was good or concerning, with specific numbers (deep/REM time, HRV, HR).",
-  "activity": "One sentence about today's activity progress so far and what to aim for.",
-  "readiness": "One sentence about today's recovery status and how ready the body is.",
-  "tip": "One specific, actionable tip for TODAY based on the data."
-}`;
+  return `You are a sleep analyst for an Oura Ring dashboard. The user is viewing their Sleep Analysis page. Analyze their sleep patterns, quality, and trends. Be specific with numbers. ${jsonInstructions()}
+
+## Sleep Scores (recent)
+${sleep.slice(-14).map(s => `${s.day}: ${s.score}`).join(", ") || "No data"}
+
+## Detailed Sleep Data (last 7 nights)
+${formatSleepDetails(sleepPeriods)}
+
+Focus on: sleep duration trends, deep/REM balance, HRV during sleep, heart rate patterns, efficiency, and any concerning patterns.`;
+}
+
+function buildActivityPrompt(data: DataRecord): string {
+  const activity = extractActivity(data);
+  const workouts = extractWorkouts(data);
+
+  return `You are an activity analyst for an Oura Ring dashboard. The user is viewing their Activity page. Analyze movement, steps, calories, and activity patterns. Be specific with numbers. ${jsonInstructions()}
+
+## Recent Activity (last 14 days)
+${activity.slice(-14).map(a => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories} active_cal=${a.active_calories} high=${Math.round((a.high_activity_time || 0) / 60)}min med=${Math.round((a.medium_activity_time || 0) / 60)}min low=${Math.round((a.low_activity_time || 0) / 60)}min`).join("\n") || "No data"}
+
+## Recent Workouts
+${workouts.slice(-7).map(w => `${w.day}: ${w.activity} ${Math.round(w.calories)}cal ${w.intensity}`).join("\n") || "No workouts"}
+
+Focus on: step count trends, calorie burn consistency, activity intensity distribution, and workout frequency.`;
+}
+
+function buildReadinessPrompt(data: DataRecord): string {
+  const readiness = extractReadiness(data);
+  const sleepPeriods = extractSleepPeriods(data);
+
+  return `You are a recovery analyst for an Oura Ring dashboard. The user is viewing their Readiness page. Analyze recovery status, temperature trends, and readiness contributors. Be specific with numbers. ${jsonInstructions()}
+
+## Recent Readiness (last 14 days)
+${readiness.slice(-14).map(r => `${r.day}: score=${r.score} temp_dev=${r.temperature_deviation?.toFixed(2) || "?"}°C temp_trend=${r.temperature_trend_deviation?.toFixed(2) || "?"}°C`).join("\n") || "No data"}
+
+## Recent Sleep Context
+${formatSleepDetails(sleepPeriods)}
+
+Focus on: readiness score trends, temperature deviations (flag anything unusual), recovery patterns, and relationship between sleep quality and readiness.`;
+}
+
+function buildHeartRatePrompt(data: DataRecord): string {
+  const sleepPeriods = extractSleepPeriods(data);
+
+  return `You are a cardiovascular analyst for an Oura Ring dashboard. The user is viewing their Heart Rate page. Analyze resting HR, HRV trends, and cardiovascular patterns. Be specific with numbers. ${jsonInstructions()}
+
+## Heart Rate & HRV During Sleep (last 14 nights)
+${sleepPeriods.slice(-14).map(s => `${s.day}: avg_hr=${s.average_heart_rate} lowest_hr=${s.lowest_heart_rate} avg_hrv=${s.average_hrv}`).join("\n") || "No data"}
+
+Focus on: resting HR trends (lower is generally better), HRV trends (higher is generally better), HR variability between nights, and any notable patterns or anomalies.`;
+}
+
+function buildStressPrompt(data: DataRecord): string {
+  const stress = extractStress(data);
+  const spo2 = extractSpo2(data);
+  const cvAge = extractCardiovascularAge(data);
+
+  return `You are a stress & resilience analyst for an Oura Ring dashboard. The user is viewing their Stress & Resilience page. Analyze stress levels, recovery, SpO2, and cardiovascular metrics. Be specific with numbers. ${jsonInstructions()}
+
+## Stress Data (last 14 days)
+${stress.slice(-14).map(s => `${s.day}: summary=${s.day_summary} stress=${s.stress_high}min recovery=${s.recovery_high}min daytime_recovery=${s.daytime_recovery || 0}min`).join("\n") || "No data"}
+
+## SpO2 (Blood Oxygen)
+${spo2.slice(-14).map(s => `${s.day}: avg=${s.spo2_percentage?.average || "?"}%`).join(", ") || "No data"}
+
+## Cardiovascular Age
+${cvAge.slice(-7).map(c => `${c.day}: ${c.vascular_age}yrs`).join(", ") || "No data"}
+
+Focus on: stress-to-recovery balance, SpO2 levels (flag if <95%), cardiovascular age relative to chronological age, and stress management patterns.`;
+}
+
+function buildWorkoutsPrompt(data: DataRecord): string {
+  const workouts = extractWorkouts(data);
+  const activity = extractActivity(data);
+
+  return `You are a fitness analyst for an Oura Ring dashboard. The user is viewing their Workouts page. Analyze workout patterns, frequency, intensity, and calorie burn. Be specific with numbers. ${jsonInstructions()}
+
+## Recent Workouts (last 14)
+${workouts.slice(-14).map(w => {
+  const dur = Math.round((new Date(w.end_datetime).getTime() - new Date(w.start_datetime).getTime()) / 60000);
+  return `${w.day}: ${w.activity} ${dur}min ${Math.round(w.calories)}cal ${w.intensity} dist=${Math.round((w.distance || 0) / 1000 * 10) / 10}km`;
+}).join("\n") || "No workouts"}
+
+## Activity Context (last 7 days)
+${activity.slice(-7).map(a => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories}`).join("\n") || "No data"}
+
+Focus on: workout frequency and consistency, intensity distribution, calorie burn patterns, variety of activities, and recovery between sessions.`;
 }

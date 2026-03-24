@@ -14,6 +14,7 @@ import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
 import { MultiLineChart } from "@/components/charts/MultiLineChart";
 import { Zap, Thermometer, Heart, Wind, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
+import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
   const d = new Date();
@@ -53,6 +54,8 @@ export default function ReadinessPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          <AISummaryCard page="readiness" data={data} />
+
           {/* Score overview */}
           <div className="premium-card p-8">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">

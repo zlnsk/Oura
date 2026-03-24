@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -21,7 +21,6 @@ import {
   Flame,
   Wind,
   RefreshCw,
-  Sparkles,
   Moon,
   Sun,
   Clock,
@@ -30,7 +29,8 @@ import {
   Target,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
-import type { DashboardData, SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
+import { AISummaryCard } from "@/components/ui/AISummaryCard";
+import type { SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
 
 function getDateStr(date: Date): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -109,7 +109,6 @@ function TodayProgress({
   todaySleepPeriod,
   todayActivity,
   todayReadiness,
-  aiSummary,
   combinedIntradayData,
   wakeTimeLabel,
   selectedDate,
@@ -118,7 +117,6 @@ function TodayProgress({
   todaySleepPeriod: SleepPeriod | undefined;
   todayActivity: DailyActivity | undefined;
   todayReadiness: DailyReadiness | undefined;
-  aiSummary: AISummary | null;
   combinedIntradayData: { time: string; hr?: number; met?: number }[];
   wakeTimeLabel: string | null;
   selectedDate: string;
@@ -285,7 +283,6 @@ function TodayProgress({
               </div>
             )}
 
-            <AIInsightBadge text={aiSummary?.sleep || ""} />
           </div>
         )}
 
@@ -309,7 +306,6 @@ function TodayProgress({
                 <ContributorBar label="Previous Night" value={todayReadiness.contributors.previous_night} />
                 <ContributorBar label="Activity Balance" value={todayReadiness.contributors.activity_balance} />
               </div>
-              <AIInsightBadge text={aiSummary?.readiness || ""} />
             </div>
           )}
 
@@ -355,7 +351,6 @@ function TodayProgress({
                 <ContributorBar label="Training Frequency" value={todayActivity.contributors.training_frequency} />
                 <ContributorBar label="Training Volume" value={todayActivity.contributors.training_volume} />
               </div>
-              <AIInsightBadge text={aiSummary?.activity || ""} />
             </div>
           )}
         </div>
@@ -372,120 +367,10 @@ function TodayProgress({
   );
 }
 
-interface AISummary {
-  overall: string;
-  sleep: string;
-  activity: string;
-  readiness: string;
-  tip: string;
-}
-
-function AIInsightBadge({ text }: { text: string }) {
-  if (!text) return null;
-  return (
-    <div className="flex items-start gap-2 mt-3 p-3 rounded-xl bg-gradient-to-r from-violet-50 to-indigo-50 dark:from-violet-950/20 dark:to-indigo-950/20 border border-violet-100 dark:border-violet-900/30">
-      <Sparkles className="w-3.5 h-3.5 text-violet-500 mt-0.5 shrink-0" />
-      <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{text}</p>
-    </div>
-  );
-}
-
-function AISummarySection({ data, aiSummary, onFetch, loading, error }: {
-  data: DashboardData;
-  aiSummary: AISummary | null;
-  onFetch: () => void;
-  loading: boolean;
-  error: string | null;
-}) {
-  return (
-    <div className="premium-card overflow-hidden">
-      <div className="p-5 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-accent-violet to-oura-500 flex items-center justify-center shadow-lg shadow-accent-violet/20">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-sm">AI Health Summary</h3>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">Powered by Claude</p>
-          </div>
-        </div>
-        <button
-          onClick={onFetch}
-          disabled={loading}
-          className="btn-primary text-xs px-3 py-1.5"
-        >
-          {loading ? (
-            <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Analyzing...</>
-          ) : aiSummary ? (
-            <><RefreshCw className="w-3.5 h-3.5" /> Refresh</>
-          ) : (
-            <><Sparkles className="w-3.5 h-3.5" /> Generate</>
-          )}
-        </button>
-      </div>
-
-      {(error || loading || aiSummary) && (
-        <div className="px-5 pb-5">
-          {error && (
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800/40 text-rose-600 dark:text-rose-400 text-xs">
-              {error}
-            </div>
-          )}
-          {loading && !aiSummary && (
-            <div className="space-y-2">
-              {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-3 bg-slate-200 dark:bg-slate-800 rounded animate-pulse" style={{ width: `${90 - i * 15}%` }} />
-              ))}
-            </div>
-          )}
-          {aiSummary && (
-            <div className="space-y-3">
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                {aiSummary.overall}
-              </p>
-              {aiSummary.tip && (
-                <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30">
-                  <Zap className="w-3.5 h-3.5 text-amber-500 mt-0.5 shrink-0" />
-                  <p className="text-xs font-medium text-amber-700 dark:text-amber-300">{aiSummary.tip}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function DashboardPage() {
   const { data, loading, error, fetchData, lastUpdated } = useOuraData();
-  const [aiSummary, setAiSummary] = useState<AISummary | null>(null);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiError, setAiError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState(getToday());
-
-  const fetchAiSummary = async () => {
-    if (!data) return;
-    setAiLoading(true);
-    setAiError(null);
-    try {
-      const res = await fetch("/api/ai-summary", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data }),
-      });
-      if (!res.ok) {
-        const json = await res.json();
-        throw new Error(json.error || "Failed to generate summary");
-      }
-      const json = await res.json();
-      setAiSummary(json.summary);
-    } catch (err) {
-      setAiError(err instanceof Error ? err.message : "Unknown error");
-    } finally {
-      setAiLoading(false);
-    }
-  };
 
   useEffect(() => {
     fetchData();
@@ -614,25 +499,18 @@ export default function DashboardPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          {/* AI Summary */}
+          <AISummaryCard page="dashboard" data={data} />
+
           {/* Today's Progress */}
           <TodayProgress
             todaySleep={todaySleep}
             todaySleepPeriod={todaySleepPeriod}
             todayActivity={todayActivity}
             todayReadiness={todayReadiness}
-            aiSummary={aiSummary}
             combinedIntradayData={combinedIntradayData}
             wakeTimeLabel={wakeTimeLabel}
             selectedDate={selectedDate}
-          />
-
-          {/* AI Summary */}
-          <AISummarySection
-            data={data}
-            aiSummary={aiSummary}
-            onFetch={fetchAiSummary}
-            loading={aiLoading}
-            error={aiError}
           />
 
           {/* Trends section */}

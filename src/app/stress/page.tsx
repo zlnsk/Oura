@@ -14,6 +14,7 @@ import { MultiLineChart } from "@/components/charts/MultiLineChart";
 import { BarChartComponent } from "@/components/charts/BarChartComponent";
 import { Brain, Shield, Gauge, Wind, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
+import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
   const d = new Date();
@@ -58,6 +59,8 @@ export default function StressPage() {
 
       {data && (
         <div className="space-y-6 animate-fade-in">
+          <AISummaryCard page="stress" data={data} />
+
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
