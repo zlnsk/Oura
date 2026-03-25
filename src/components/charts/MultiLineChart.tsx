@@ -87,6 +87,7 @@ export const MultiLineChart = memo(function MultiLineChart({
               strokeWidth={2}
               name={name}
               dot={false}
+              connectNulls
               activeDot={{ r: 4, fill: color }}
             />
           ))}

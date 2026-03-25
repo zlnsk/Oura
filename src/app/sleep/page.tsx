@@ -171,7 +171,7 @@ export default function SleepPage() {
                 title="Heart Rate During Sleep"
                 color="#f43f5e"
                 unit=" bpm"
-                avgValue={selectedPeriod?.average_heart_rate}
+                avgValue={selectedPeriod ? Math.round(selectedPeriod.average_heart_rate) : undefined}
                 gradientId="sleepHRGrad"
               />
               <IntradayChart
@@ -179,7 +179,7 @@ export default function SleepPage() {
                 title="HRV During Sleep"
                 color="#8b5cf6"
                 unit=" ms"
-                avgValue={selectedPeriod?.average_hrv}
+                avgValue={selectedPeriod ? Math.round(selectedPeriod.average_hrv) : undefined}
                 gradientId="sleepHRVGrad"
               />
             </div>

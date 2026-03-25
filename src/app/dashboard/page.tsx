@@ -251,13 +251,13 @@ function TodayProgress({
               <div className="text-center">
                 <p className="text-xs text-slate-500 dark:text-slate-400">Avg HR</p>
                 <p className="text-sm font-bold mt-0.5">
-                  {todaySleepPeriod.average_heart_rate} <span className="text-xs font-normal text-slate-400">bpm</span>
+                  {Math.round(todaySleepPeriod.average_heart_rate)} <span className="text-xs font-normal text-slate-400">bpm</span>
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-slate-500 dark:text-slate-400">HRV</p>
                 <p className="text-sm font-bold mt-0.5">
-                  {todaySleepPeriod.average_hrv} <span className="text-xs font-normal text-slate-400">ms</span>
+                  {Math.round(todaySleepPeriod.average_hrv)} <span className="text-xs font-normal text-slate-400">ms</span>
                 </p>
               </div>
             </div>
@@ -540,7 +540,7 @@ export default function DashboardPage() {
               icon={Heart}
               color="#f43f5e"
               trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate))}
-              trendLabel={`Last night ${todaySleepPeriod?.average_heart_rate || "--"}`}
+              trendLabel={`Last night ${todaySleepPeriod ? Math.round(todaySleepPeriod.average_heart_rate) : "--"}`}
               trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate)) === "down"}
             />
             <StatCard
@@ -550,7 +550,7 @@ export default function DashboardPage() {
               icon={Wind}
               color="#8b5cf6"
               trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv))}
-              trendLabel={`Last night ${todaySleepPeriod?.average_hrv || "--"}`}
+              trendLabel={`Last night ${todaySleepPeriod ? Math.round(todaySleepPeriod.average_hrv) : "--"}`}
               trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv)) === "up"}
             />
           </div>

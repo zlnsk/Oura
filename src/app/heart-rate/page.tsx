@@ -99,7 +99,7 @@ export default function HeartRatePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
               label="Resting HR"
-              value={selectedSleepPeriod?.average_heart_rate || "--"}
+              value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.average_heart_rate) : "--"}
               unit="bpm"
               icon={Heart}
               color="#f43f5e"
@@ -108,7 +108,7 @@ export default function HeartRatePage() {
             />
             <StatCard
               label="Lowest HR"
-              value={selectedSleepPeriod?.lowest_heart_rate || "--"}
+              value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.lowest_heart_rate) : "--"}
               unit="bpm"
               icon={TrendingDown}
               color="#06b6d4"
@@ -124,7 +124,7 @@ export default function HeartRatePage() {
             />
             <StatCard
               label="HRV"
-              value={selectedSleepPeriod?.average_hrv || "--"}
+              value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.average_hrv) : "--"}
               unit="ms"
               icon={Wind}
               color="#8b5cf6"

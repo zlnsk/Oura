@@ -88,6 +88,7 @@ export const ScoreLineChart = memo(function ScoreLineChart({
             strokeWidth={2.5}
             fill={`url(#${gradientId})`}
             dot={false}
+            connectNulls
             activeDot={{
               r: 5,
               fill: color,
