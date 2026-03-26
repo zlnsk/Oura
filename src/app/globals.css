@@ -97,6 +97,18 @@
     animation: shimmer 2s linear infinite;
   }
 
+  .skeleton {
+    @apply bg-slate-100 dark:bg-white/5 animate-pulse;
+  }
+
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+  .status-dot-success { @apply bg-emerald-500; }
+  .status-dot-warning { @apply bg-amber-500; }
+  .status-dot-danger { @apply bg-rose-500; }
+  .status-dot-neutral { @apply bg-slate-400; }
+
   .nav-link {
     @apply flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium
            text-slate-600 dark:text-slate-400
@@ -174,6 +186,23 @@
   .section-title {
     @apply text-sm font-semibold;
     color: var(--text-secondary);
+  }
+}
+
+/* Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-slide-in-right,
+  .animate-loading-bar,
+  .animate-float {
+    animation: none !important;
+  }
+
+  .transition-all,
+  .transition-colors,
+  .transition-transform {
+    transition-duration: 0.01ms !important;
   }
 }
 

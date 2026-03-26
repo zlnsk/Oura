@@ -5,13 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { StatusChip } from "@/components/ui/StatusChip";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 
 function LoadingBar() {
   const { loading } = useOuraData();
-
   if (!loading) return null;
-
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-[2px]">
       <div className="h-full bg-oura-500 animate-loading-bar" />
@@ -19,25 +18,35 @@ function LoadingBar() {
   );
 }
 
-function OfflineBanner() {
-  const { isOffline, isStale, lastUpdated } = useOuraData();
+function ConnectionStatus() {
+  const { loading, isOffline, isStale, error, lastUpdated } = useOuraData();
 
-  if (!isOffline && !isStale) return null;
+  let variant: "synced" | "syncing" | "stale" | "offline" | "error" = "synced";
+  let label: string | undefined;
 
-  const timeLabel = lastUpdated
-    ? new Date(lastUpdated).toLocaleString("en-US", {
-        month: "short",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-      })
-    : "unknown";
+  if (isOffline) {
+    variant = "offline";
+  } else if (error) {
+    variant = "error";
+    label = "Sync failed";
+  } else if (loading) {
+    variant = "syncing";
+  } else if (isStale) {
+    variant = "stale";
+    if (lastUpdated) {
+      const mins = Math.round((Date.now() - lastUpdated) / 60000);
+      label = mins < 60 ? `${mins}m ago` : `${Math.round(mins / 60)}h ago`;
+    }
+  } else if (lastUpdated) {
+    const mins = Math.round((Date.now() - lastUpdated) / 60000);
+    if (mins < 2) label = "Just now";
+    else if (mins < 60) label = `${mins}m ago`;
+    else label = `${Math.round(mins / 60)}h ago`;
+  }
 
   return (
-    <div className="fixed top-0 left-64 right-0 z-40 px-4 py-2 text-xs text-center font-medium bg-[var(--bg-elevated)] text-amber-700 dark:text-amber-300">
-      {isOffline
-        ? `You are offline. Showing cached data from ${timeLabel}.`
-        : `Showing cached data from ${timeLabel}. Pull to refresh.`}
+    <div className="fixed top-4 right-8 z-40">
+      <StatusChip variant={variant} label={label} />
     </div>
   );
 }
@@ -68,7 +77,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[var(--bg-secondary)]">
       <LoadingBar />
-      <OfflineBanner />
+      <ConnectionStatus />
       <Sidebar />
       <main className="ml-64 p-8 lg:p-10 transition-all duration-300">
         <div className="max-w-[1400px] mx-auto">

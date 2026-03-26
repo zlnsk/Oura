@@ -52,6 +52,10 @@ const config: Config = {
         "mesh-gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
         "mesh-dark": "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
       },
+      screens: {
+        "motion-safe": { raw: "(prefers-reduced-motion: no-preference)" },
+        "motion-reduce": { raw: "(prefers-reduced-motion: reduce)" },
+      },
       borderRadius: {
         "2xl": "16px",
         "3xl": "20px",

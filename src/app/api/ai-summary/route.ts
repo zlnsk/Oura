@@ -68,6 +68,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  // Validate request body size (max 100KB)
+  const contentLength = parseInt(req.headers.get("content-length") || "0", 10);
+  if (contentLength > 100_000) {
+    return NextResponse.json(
+      { error: "Request body too large" },
+      { status: 413 }
+    );
+  }
+
+  // Validate page type
+  const ALLOWED_PAGES = ["dashboard", "sleep", "activity", "readiness", "heart-rate", "stress", "workouts"];
+
   // Check for user-provided key first (cookie), then fall back to server env
   const userKey = req.cookies.get("anthropic_api_key")?.value;
   const anthropicKey = userKey || process.env.ANTHROPIC_API_KEY;
@@ -89,7 +101,7 @@ export async function POST(req: NextRequest) {
   }
 
   const { data, page } = await req.json();
-  const pageType = (page as string) || "dashboard";
+  const pageType = ALLOWED_PAGES.includes(page) ? page : "dashboard";
 
   const prompt = buildPrompt(data, pageType);
 
@@ -121,9 +133,14 @@ export async function POST(req: NextRequest) {
     const result = await response.json();
     const text = result.content?.[0]?.text || "{}";
 
+    const rateLimitHeaders = {
+      "X-RateLimit-Limit": String(DAILY_LIMIT),
+      "X-RateLimit-Remaining": String(remaining),
+    };
+
     try {
       const parsed = JSON.parse(text);
-      return NextResponse.json({ summary: parsed, remaining });
+      return NextResponse.json({ summary: parsed, remaining }, { headers: rateLimitHeaders });
     } catch {
       return NextResponse.json({
         summary: {
@@ -134,7 +151,7 @@ export async function POST(req: NextRequest) {
           tip: "",
         },
         remaining,
-      });
+      }, { headers: rateLimitHeaders });
     }
   } catch (error) {
     console.error("AI summary error:", error);

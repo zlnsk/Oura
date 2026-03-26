@@ -1,0 +1,14 @@
+{
+  "buildNumber": 7,
+  "buildDate": "2026-03-26T12:00:00Z",
+  "version": "1.2.0",
+  "builds": [
+    {"number": 7, "date": "2026-03-26", "description": "Premium UI audit implementation"},
+    {"number": 6, "date": "2026-03-26", "description": "Material 3 UI modernization"},
+    {"number": 5, "date": "2026-03-26", "description": "Production improvements"},
+    {"number": 4, "date": "2026-03-26", "description": "Test suite"},
+    {"number": 3, "date": "2026-03-26", "description": "README and docs"},
+    {"number": 2, "date": "2026-03-24", "description": "Initial dashboard"},
+    {"number": 1, "date": "2026-03-24", "description": "Project setup"}
+  ]
+}
