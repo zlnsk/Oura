@@ -138,7 +138,7 @@ async function fetchChunked(
 
   // Sequential to respect rate limits
   for (const chunk of chunks) {
-    const data = await fetchOuraData(endpoint, token, chunk as Record<string, string>);
+    const data = await fetchOuraData(endpoint, token, chunk as unknown as Record<string, string>);
     if (data.data) results.push(...data.data);
   }
 
