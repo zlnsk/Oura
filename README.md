@@ -4,7 +4,7 @@
 
 Your Oura Ring captures an extraordinary amount of health data — sleep stages, heart rate variability, readiness scores, stress levels, SpO2, workouts, and more. But until now, there hasn't been a dedicated web tool to truly explore, analyze, and understand that data on a larger screen with richer visualizations.
 
-**Oura Analytics fills that gap.**
+**Oura Analytics fills that gap.** It's open for anyone with an Oura Ring to explore their personal health data in an easy, AI-supported way — bringing clarity to the numbers that matter most.
 
 ## Why Oura Analytics?
 
@@ -80,6 +80,10 @@ Your data stays yours:
 - **Google OAuth** — no passwords to manage
 - **No database** — your health data is fetched directly from Oura's API and cached locally in your browser
 - **Security headers** — CSP, HSTS, X-Frame-Options, and more
+
+## Disclaimer
+
+Oura Analytics is a personal data exploration tool — not a medical device. The insights, charts, and AI-generated summaries are intended for informational and educational purposes only. **Always consult with your doctor or a qualified healthcare professional before making any decisions based on your health data.** This tool does not diagnose, treat, or prevent any medical condition.
 
 ## License
 
