@@ -102,7 +102,11 @@ export default function SleepPage() {
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-            <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
@@ -113,11 +117,11 @@ export default function SleepPage() {
       {!loading && !data && <EmptyState />}
 
       {data && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <AISummaryCard page="sleep" data={data} />
 
           {/* Selected night overview */}
-          <div className="premium-card p-8">
+          <div className="premium-card p-6">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
               <ScoreRing
                 score={selectedDailySleep?.score || 0}
@@ -125,34 +129,34 @@ export default function SleepPage() {
                 strokeWidth={10}
                 label="Sleep Score"
               />
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {selectedPeriod ? (
                   <>
                     <div>
                       <p className="stat-label">Total Sleep</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(selectedPeriod.total_sleep_duration)}</p>
+                      <p className="text-xl font-semibold mt-1">{formatDuration(selectedPeriod.total_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Efficiency</p>
-                      <p className="text-xl font-bold mt-1">{selectedPeriod.efficiency}%</p>
+                      <p className="text-xl font-semibold mt-1">{selectedPeriod.efficiency}%</p>
                     </div>
                     <div>
                       <p className="stat-label">Deep Sleep</p>
-                      <p className="text-xl font-bold mt-1 text-indigo-500">{formatDuration(selectedPeriod.deep_sleep_duration)}</p>
+                      <p className="text-xl font-semibold mt-1 text-indigo-500">{formatDuration(selectedPeriod.deep_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">REM Sleep</p>
-                      <p className="text-xl font-bold mt-1 text-violet-500">{formatDuration(selectedPeriod.rem_sleep_duration)}</p>
+                      <p className="text-xl font-semibold mt-1 text-violet-500">{formatDuration(selectedPeriod.rem_sleep_duration)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Bedtime</p>
-                      <p className="text-xl font-bold mt-1">
+                      <p className="text-xl font-semibold mt-1">
                         {new Date(selectedPeriod.bedtime_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
                     <div>
                       <p className="stat-label">Wake Time</p>
-                      <p className="text-xl font-bold mt-1">
+                      <p className="text-xl font-semibold mt-1">
                         {new Date(selectedPeriod.bedtime_end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                       </p>
                     </div>
@@ -167,7 +171,7 @@ export default function SleepPage() {
           {/* Naps for selected day */}
           {naps.filter((n) => n.day === selectedDate).length > 0 && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
                 Naps
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -202,17 +206,17 @@ export default function SleepPage() {
           {/* Nap trends (period-wide) */}
           {naps.length > 0 && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
                 Nap Summary
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div>
                   <p className="stat-label">Total Naps</p>
-                  <p className="text-xl font-bold mt-1">{naps.length}</p>
+                  <p className="text-xl font-semibold mt-1">{naps.length}</p>
                 </div>
                 <div>
                   <p className="stat-label">Avg Nap Duration</p>
-                  <p className="text-xl font-bold mt-1">
+                  <p className="text-xl font-semibold mt-1">
                     {formatDuration(
                       naps.reduce((s, n) => s + n.total_sleep_duration, 0) / naps.length
                     )}
@@ -220,13 +224,13 @@ export default function SleepPage() {
                 </div>
                 <div>
                   <p className="stat-label">Total Nap Time</p>
-                  <p className="text-xl font-bold mt-1">
+                  <p className="text-xl font-semibold mt-1">
                     {formatDuration(naps.reduce((s, n) => s + n.total_sleep_duration, 0))}
                   </p>
                 </div>
                 <div>
                   <p className="stat-label">Days with Naps</p>
-                  <p className="text-xl font-bold mt-1">
+                  <p className="text-xl font-semibold mt-1">
                     {new Set(naps.map((n) => n.day)).size}
                   </p>
                 </div>
@@ -258,7 +262,7 @@ export default function SleepPage() {
 
           {/* Period averages */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h2>
             <DateRangeSelector />
           </div>
 
@@ -345,7 +349,7 @@ export default function SleepPage() {
           {/* Sleep contributors */}
           {selectedDailySleep?.contributors && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
                 Sleep Score Contributors
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">

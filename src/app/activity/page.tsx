@@ -111,7 +111,11 @@ export default function ActivityPage() {
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-            <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
@@ -122,11 +126,11 @@ export default function ActivityPage() {
       {!loading && !data && <EmptyState />}
 
       {data && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <AISummaryCard page="activity" data={data} />
 
           {/* Selected day overview */}
-          <div className="premium-card p-8">
+          <div className="premium-card p-6">
             <div className="flex flex-wrap items-center justify-center gap-8 lg:gap-16">
               <ScoreRing
                 score={selected?.score || 0}
@@ -134,34 +138,34 @@ export default function ActivityPage() {
                 strokeWidth={10}
                 label="Activity Score"
               />
-              <div className="grid grid-cols-2 gap-x-12 gap-y-4">
+              <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {selected ? (
                   <>
                     <div>
                       <p className="stat-label">Steps</p>
-                      <p className="text-xl font-bold mt-1">{selected.steps?.toLocaleString()}</p>
+                      <p className="text-xl font-semibold mt-1">{selected.steps?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Total Burn (incl. BMR)</p>
-                      <p className="text-xl font-bold mt-1">{selected.total_calories?.toLocaleString()}</p>
+                      <p className="text-xl font-semibold mt-1">{selected.total_calories?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Active Calories</p>
-                      <p className="text-xl font-bold mt-1">{selected.active_calories?.toLocaleString()}</p>
+                      <p className="text-xl font-semibold mt-1">{selected.active_calories?.toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="stat-label">Walking Distance</p>
-                      <p className="text-xl font-bold mt-1">
+                      <p className="text-xl font-semibold mt-1">
                         {((selected.equivalent_walking_distance || 0) / 1000).toFixed(1)} km
                       </p>
                     </div>
                     <div>
                       <p className="stat-label">High Activity</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(selected.high_activity_time || 0)}</p>
+                      <p className="text-xl font-semibold mt-1">{formatDuration(selected.high_activity_time || 0)}</p>
                     </div>
                     <div>
                       <p className="stat-label">Medium Activity</p>
-                      <p className="text-xl font-bold mt-1">{formatDuration(selected.medium_activity_time || 0)}</p>
+                      <p className="text-xl font-semibold mt-1">{formatDuration(selected.medium_activity_time || 0)}</p>
                     </div>
                   </>
                 ) : (
@@ -181,7 +185,7 @@ export default function ActivityPage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h2>
             <DateRangeSelector />
           </div>
 
@@ -271,7 +275,7 @@ export default function ActivityPage() {
           {/* Contributors */}
           {selected?.contributors && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
                 Activity Score Contributors
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">

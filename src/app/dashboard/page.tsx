@@ -65,7 +65,7 @@ function SleepStageBar({
           <span className="text-slate-400 dark:text-slate-500 ml-1">({pct}%)</span>
         </span>
       </div>
-      <div className="h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{ width: `${pct}%`, backgroundColor: color }}
@@ -87,7 +87,7 @@ function ContributorBar({ label, value }: { label: string; value: number }) {
         <span className="text-slate-600 dark:text-slate-400">{label}</span>
         <span className="font-medium tabular-nums">{value}</span>
       </div>
-      <div className="h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+      <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
           style={{ width: `${value}%`, backgroundColor: getBarColor(value) }}
@@ -203,7 +203,7 @@ function TodayProgress({
           <div className="premium-card p-6">
             <div className="flex items-center gap-2 mb-4">
               <Moon className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">
                 Last Night&apos;s Sleep
               </h3>
             </div>
@@ -245,17 +245,17 @@ function TodayProgress({
             <div className="grid grid-cols-3 gap-3 mt-5 pt-4 border-t border-slate-100 dark:border-slate-800/60">
               <div className="text-center">
                 <p className="text-xs text-slate-500 dark:text-slate-400">Efficiency</p>
-                <p className="text-sm font-bold mt-0.5">{todaySleepPeriod.efficiency}%</p>
+                <p className="text-sm font-semibold mt-0.5">{todaySleepPeriod.efficiency}%</p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-slate-500 dark:text-slate-400">Avg HR</p>
-                <p className="text-sm font-bold mt-0.5">
+                <p className="text-sm font-semibold mt-0.5">
                   {Math.round(todaySleepPeriod.average_heart_rate)} <span className="text-xs font-normal text-slate-400">bpm</span>
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-xs text-slate-500 dark:text-slate-400">HRV</p>
-                <p className="text-sm font-bold mt-0.5">
+                <p className="text-sm font-semibold mt-0.5">
                   {Math.round(todaySleepPeriod.average_hrv)} <span className="text-xs font-normal text-slate-400">ms</span>
                 </p>
               </div>
@@ -286,7 +286,7 @@ function TodayProgress({
             <div className="premium-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-emerald-400" />
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Today&apos;s Readiness
                 </h3>
               </div>
@@ -307,7 +307,7 @@ function TodayProgress({
             <div className="premium-card p-6">
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="w-4 h-4 text-amber-400" />
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+                <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">
                   Today&apos;s Activity
                 </h3>
               </div>
@@ -316,22 +316,22 @@ function TodayProgress({
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
                   <Footprints className="w-3.5 h-3.5 text-emerald-500 mb-1" />
                   <p className="text-xs text-slate-500 dark:text-slate-400">Steps</p>
-                  <p className="text-sm font-bold">{todayActivity.steps.toLocaleString()}</p>
+                  <p className="text-sm font-semibold">{todayActivity.steps.toLocaleString()}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
                   <Flame className="w-3.5 h-3.5 text-orange-500 mb-1" />
                   <p className="text-xs text-slate-500 dark:text-slate-400">Total Burn</p>
-                  <p className="text-sm font-bold">{todayActivity.total_calories.toLocaleString()}</p>
+                  <p className="text-sm font-semibold">{todayActivity.total_calories.toLocaleString()}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
                   <Target className="w-3.5 h-3.5 text-blue-500 mb-1" />
                   <p className="text-xs text-slate-500 dark:text-slate-400">Active Calories</p>
-                  <p className="text-sm font-bold">{todayActivity.active_calories.toLocaleString()}</p>
+                  <p className="text-sm font-semibold">{todayActivity.active_calories.toLocaleString()}</p>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 dark:bg-white/5">
                   <Clock className="w-3.5 h-3.5 text-violet-500 mb-1" />
                   <p className="text-xs text-slate-500 dark:text-slate-400">Active Time</p>
-                  <p className="text-sm font-bold">
+                  <p className="text-sm font-semibold">
                     {formatDuration(todayActivity.high_activity_time + todayActivity.medium_activity_time + todayActivity.low_activity_time)}
                   </p>
                 </div>
@@ -476,7 +476,7 @@ export default function DashboardPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="btn-secondary text-sm px-3 py-2"
+              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
               title="Refresh data from Oura"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
@@ -491,7 +491,7 @@ export default function DashboardPage() {
       {error && !data && <EmptyState />}
 
       {data && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           {/* AI Summary */}
           <AISummaryCard page="dashboard" data={data} />
 
@@ -508,7 +508,7 @@ export default function DashboardPage() {
 
           {/* Trends section */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h2>
+            <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h2>
             <DateRangeSelector />
           </div>
 

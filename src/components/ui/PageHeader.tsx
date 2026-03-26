@@ -21,23 +21,18 @@ export function PageHeader({
   className,
 }: PageHeaderProps) {
   return (
-    <div className={cn("flex items-start justify-between mb-8", className)}>
-      <div className="flex items-center gap-4">
+    <div className={cn("flex items-start justify-between mb-6", className)}>
+      <div className="flex items-center gap-3">
         {Icon && (
-          <div
-            className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg"
-            style={{
-              background: `linear-gradient(135deg, ${iconColor || "#0c93e9"}, ${iconColor || "#8b5cf6"})`,
-              boxShadow: `0 8px 20px -4px ${iconColor || "#0c93e9"}40`,
-            }}
-          >
-            <Icon className="w-6 h-6 text-white" />
-          </div>
+          <Icon
+            className="w-5 h-5"
+            style={{ color: iconColor || "#0c93e9" }}
+          />
         )}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
+          <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
           {subtitle && (
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+            <p className="text-sm text-slate-400 dark:text-slate-500 mt-0.5">
               {subtitle}
             </p>
           )}

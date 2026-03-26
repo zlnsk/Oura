@@ -13,8 +13,8 @@ function LoadingBar() {
   if (!loading) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 h-0.5">
-      <div className="h-full bg-gradient-to-r from-oura-500 via-accent-violet to-oura-500 animate-loading-bar" />
+    <div className="fixed top-0 left-0 right-0 z-50 h-[2px]">
+      <div className="h-full bg-oura-500 animate-loading-bar" />
     </div>
   );
 }
@@ -34,7 +34,7 @@ function OfflineBanner() {
     : "unknown";
 
   return (
-    <div className="fixed top-0 left-64 right-0 z-40 px-4 py-2 text-xs text-center font-medium bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-b border-amber-200 dark:border-amber-800/40">
+    <div className="fixed top-0 left-64 right-0 z-40 px-4 py-2 text-xs text-center font-medium bg-[var(--bg-elevated)] text-amber-700 dark:text-amber-300">
       {isOffline
         ? `You are offline. Showing cached data from ${timeLabel}.`
         : `Showing cached data from ${timeLabel}. Pull to refresh.`}
@@ -54,9 +54,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#0a0a0f]">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-secondary)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-oura-500 to-accent-violet animate-pulse-slow" />
+          <div className="w-12 h-12 rounded-xl bg-oura-50 dark:bg-oura-500/10 animate-pulse" />
           <p className="text-sm text-slate-400">Loading...</p>
         </div>
       </div>
@@ -66,14 +66,16 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f]">
+    <div className="min-h-screen bg-[var(--bg-secondary)]">
       <LoadingBar />
       <OfflineBanner />
       <Sidebar />
-      <main className="ml-64 p-6 lg:p-8 transition-all duration-300">
-        <ErrorBoundary>
-          {children}
-        </ErrorBoundary>
+      <main className="ml-64 p-8 lg:p-10 transition-all duration-300">
+        <div className="max-w-[1400px] mx-auto">
+          <ErrorBoundary>
+            {children}
+          </ErrorBoundary>
+        </div>
       </main>
     </div>
   );

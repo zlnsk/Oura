@@ -4,27 +4,43 @@
 
 @layer base {
   :root {
-    --bg-primary: #ffffff;
-    --bg-secondary: #f8fafc;
+    --bg-primary: #fafafa;
+    --bg-secondary: #f5f5f5;
     --bg-card: #ffffff;
-    --bg-elevated: #f1f5f9;
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    --border: #e2e8f0;
+    --bg-elevated: #f0f0f2;
+    --text-primary: #1a1a1a;
+    --text-secondary: #5f6368;
+    --text-muted: #9aa0a6;
+    --border: #e4e4e8;
     --ring: #0c93e9;
+
+    /* M3 Surface tint */
+    --surface-tint: 216, 80%, 52%;
+    --surface-container-lowest: #ffffff;
+    --surface-container-low: #f8f8fa;
+    --surface-container: #f2f2f5;
+    --surface-container-high: #ececf0;
+    --surface-container-highest: #e6e6ea;
   }
 
   .dark {
-    --bg-primary: #0a0a0f;
-    --bg-secondary: #111118;
-    --bg-card: #16161f;
-    --bg-elevated: #1e1e2a;
-    --text-primary: #f1f5f9;
-    --text-secondary: #94a3b8;
-    --text-muted: #475569;
-    --border: #1e293b;
+    --bg-primary: #111116;
+    --bg-secondary: #16161d;
+    --bg-card: #1c1c24;
+    --bg-elevated: #23232e;
+    --text-primary: #e6e6ea;
+    --text-secondary: #9499a3;
+    --text-muted: #5c6170;
+    --border: #2a2a35;
     --ring: #36adf8;
+
+    /* M3 Surface tint (dark) */
+    --surface-tint: 216, 80%, 60%;
+    --surface-container-lowest: #0d0d12;
+    --surface-container-low: #16161d;
+    --surface-container: #1c1c24;
+    --surface-container-high: #23232e;
+    --surface-container-highest: #2a2a35;
   }
 
   body {
@@ -35,37 +51,27 @@
 
 @layer components {
   .glass-card {
-    @apply bg-white/80 dark:bg-[#16161f]/80 backdrop-blur-xl
-           border border-white/20 dark:border-white/5
-           rounded-2xl shadow-card dark:shadow-card-dark
-           transition-all duration-300;
+    @apply bg-white/90 dark:bg-[#1c1c24]/90 backdrop-blur-md
+           border border-black/[0.04] dark:border-white/[0.06]
+           rounded-3xl shadow-card dark:shadow-card-dark;
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   .glass-card-hover:hover {
-    @apply shadow-card-hover dark:shadow-3d-dark
-           -translate-y-0.5 border-oura-400/20 dark:border-oura-400/10;
+    @apply shadow-card-hover border-black/[0.06] dark:border-white/[0.08];
   }
 
   .premium-card {
-    @apply relative overflow-hidden bg-white dark:bg-[#16161f]
-           rounded-2xl border border-slate-200/60 dark:border-slate-800/60
-           shadow-card dark:shadow-card-dark
-           transition-all duration-300;
-  }
-
-  .premium-card::before {
-    content: '';
-    @apply absolute inset-0 opacity-0 transition-opacity duration-300;
-    background: linear-gradient(135deg, rgba(12, 147, 233, 0.03), rgba(139, 92, 246, 0.03));
-  }
-
-  .premium-card:hover::before {
-    @apply opacity-100;
+    @apply relative overflow-hidden bg-white dark:bg-[#1c1c24]
+           rounded-3xl border border-black/[0.04] dark:border-white/[0.06]
+           shadow-card dark:shadow-card-dark;
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   .premium-card:hover {
-    @apply shadow-3d dark:shadow-3d-dark -translate-y-1
-           border-oura-200/60 dark:border-oura-800/30;
+    @apply bg-[#f8f9fc] dark:bg-[#20202a]
+           shadow-card-hover
+           border-black/[0.06] dark:border-white/[0.08];
   }
 
   .score-ring {
@@ -84,7 +90,7 @@
     background: linear-gradient(
       90deg,
       transparent 0%,
-      rgba(255, 255, 255, 0.05) 50%,
+      rgba(255, 255, 255, 0.04) 50%,
       transparent 100%
     );
     background-size: 200% 100%;
@@ -92,25 +98,28 @@
   }
 
   .nav-link {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-full text-sm font-medium
            text-slate-600 dark:text-slate-400
-           hover:bg-slate-100 dark:hover:bg-white/5
-           hover:text-slate-900 dark:hover:text-white
-           transition-all duration-200;
+           hover:text-slate-900 dark:hover:text-white;
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .nav-link:hover {
+    background: var(--surface-container);
   }
 
   .nav-link.active {
-    @apply bg-oura-50 dark:bg-oura-950/50
-           text-oura-600 dark:text-oura-400
-           shadow-sm dark:shadow-none;
+    background: var(--surface-container-high);
+    @apply text-oura-600 dark:text-oura-400;
   }
 
   .stat-value {
-    @apply text-3xl font-bold tracking-tight;
+    @apply text-2xl font-bold;
+    letter-spacing: -0.02em;
   }
 
   .stat-label {
-    @apply text-xs font-medium uppercase tracking-wider text-slate-500 dark:text-slate-400;
+    @apply text-xs font-medium text-slate-500 dark:text-slate-400;
   }
 
   .badge {
@@ -118,25 +127,26 @@
   }
 
   .badge-success {
-    @apply bg-emerald-50 dark:bg-emerald-950/40 text-emerald-600 dark:text-emerald-400;
+    @apply bg-emerald-500/[0.08] dark:bg-emerald-400/[0.1] text-emerald-600 dark:text-emerald-400;
   }
 
   .badge-warning {
-    @apply bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400;
+    @apply bg-amber-500/[0.08] dark:bg-amber-400/[0.1] text-amber-600 dark:text-amber-400;
   }
 
   .badge-danger {
-    @apply bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400;
+    @apply bg-rose-500/[0.08] dark:bg-rose-400/[0.1] text-rose-600 dark:text-rose-400;
   }
 
   .input-field {
-    @apply w-full px-4 py-3 rounded-xl text-sm
-           bg-slate-50 dark:bg-slate-900/50
-           border border-slate-200 dark:border-slate-700/50
+    @apply w-full px-4 py-3 text-sm
+           bg-slate-50 dark:bg-white/[0.04]
+           border border-black/[0.06] dark:border-white/[0.08]
            text-slate-900 dark:text-white
            placeholder:text-slate-400 dark:placeholder:text-slate-500
-           focus:outline-none focus:ring-2 focus:ring-oura-500/30 focus:border-oura-500
-           transition-all duration-200;
+           focus:outline-none focus:ring-2 focus:ring-oura-500/20 focus:border-oura-500;
+    border-radius: 14px;
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   .btn-primary {
@@ -144,25 +154,33 @@
            bg-gradient-to-r from-oura-600 to-oura-500
            hover:from-oura-500 hover:to-oura-400
            text-white font-semibold rounded-xl
-           shadow-lg shadow-oura-500/25 hover:shadow-xl hover:shadow-oura-500/30
-           transform hover:-translate-y-0.5
-           transition-all duration-200
-           disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none;
+           shadow-soft hover:shadow-card-hover
+           disabled:opacity-50 disabled:cursor-not-allowed;
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
   }
 
   .btn-secondary {
     @apply inline-flex items-center justify-center gap-2 px-6 py-3
-           bg-slate-100 dark:bg-slate-800
-           hover:bg-slate-200 dark:hover:bg-slate-700
-           text-slate-700 dark:text-slate-300 font-semibold rounded-xl
-           transition-all duration-200;
+           font-semibold rounded-xl;
+    background: var(--surface-container);
+    color: var(--text-primary);
+    transition: all 200ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  .btn-secondary:hover {
+    background: var(--surface-container-high);
+  }
+
+  .section-title {
+    @apply text-sm font-semibold;
+    color: var(--text-secondary);
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 4px;
+  height: 4px;
 }
 
 ::-webkit-scrollbar-track {
@@ -170,23 +188,23 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 dark:bg-slate-700 rounded-full;
+  @apply bg-slate-300/60 dark:bg-slate-600/40 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400 dark:bg-slate-600;
+  @apply bg-slate-400/60 dark:bg-slate-500/40;
 }
 
 /* Recharts custom styles */
 .recharts-cartesian-grid-horizontal line,
 .recharts-cartesian-grid-vertical line {
-  stroke-opacity: 0.08;
+  stroke-opacity: 0.05;
 }
 
 .dark .recharts-cartesian-grid-horizontal line,
 .dark .recharts-cartesian-grid-vertical line {
   stroke: #334155;
-  stroke-opacity: 0.3;
+  stroke-opacity: 0.15;
 }
 
 .recharts-tooltip-wrapper {

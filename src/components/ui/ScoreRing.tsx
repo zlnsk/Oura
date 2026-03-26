@@ -1,6 +1,6 @@
 "use client";
 
-import { cn, getScoreLabel } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 interface ScoreRingProps {
   score: number;
@@ -22,9 +22,9 @@ export function ScoreRing({
   const offset = circumference - (score / 100) * circumference;
 
   const getColor = (s: number) => {
-    if (s >= 85) return { stroke: "#10b981", glow: "rgba(16,185,129,0.3)" };
-    if (s >= 70) return { stroke: "#f59e0b", glow: "rgba(245,158,11,0.3)" };
-    return { stroke: "#f43f5e", glow: "rgba(244,63,94,0.3)" };
+    if (s >= 85) return "#10b981";
+    if (s >= 70) return "#f59e0b";
+    return "#f43f5e";
   };
 
   const color = getColor(score);
@@ -36,7 +36,6 @@ export function ScoreRing({
           width={size}
           height={size}
           className="transform -rotate-90"
-          style={{ filter: `drop-shadow(0 0 8px ${color.glow})` }}
           role="img"
           aria-label={`Score: ${score} out of 100`}
         >
@@ -47,35 +46,29 @@ export function ScoreRing({
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-slate-200 dark:text-slate-800"
+            className="text-slate-100 dark:text-white/5"
           />
           <circle
             cx={size / 2}
             cy={size / 2}
             r={radius}
             fill="none"
-            stroke={color.stroke}
+            stroke={color}
             strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={circumference}
             strokeDashoffset={offset}
-            className="transition-all duration-1000 ease-out"
+            className="transition-all duration-700 ease-out"
           />
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-2xl font-bold tracking-tight">{score}</span>
+          <span className="text-xl font-semibold tracking-tight">{score}</span>
         </div>
       </div>
       {label && (
         <div className="mt-2 text-center">
           <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
             {label}
-          </p>
-          <p
-            className="text-[10px] font-semibold uppercase tracking-wider mt-0.5"
-            style={{ color: color.stroke }}
-          >
-            {getScoreLabel(score)}
           </p>
         </div>
       )}

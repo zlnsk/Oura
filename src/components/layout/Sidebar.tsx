@@ -44,15 +44,15 @@ export function Sidebar() {
       className={cn(
         "fixed left-0 top-0 h-screen z-40 flex flex-col",
         "bg-white/90 dark:bg-[#0d0d14]/90 backdrop-blur-2xl",
-        "border-r border-slate-200/60 dark:border-slate-800/40",
-        "transition-all duration-300 ease-in-out",
+        "border-r border-slate-200/50 dark:border-slate-800/30",
+        "transition-all duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
         collapsed ? "w-[72px]" : "w-64"
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-200/60 dark:border-slate-800/40">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-oura-500 to-accent-violet flex items-center justify-center shadow-lg shadow-oura-500/20 flex-shrink-0">
-          <Sparkles className="w-5 h-5 text-white" />
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-200/50 dark:border-slate-800/30">
+        <div className="w-9 h-9 rounded-xl bg-oura-50 dark:bg-oura-500/10 flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-5 h-5 text-oura-500 dark:text-oura-400" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in">
@@ -65,7 +65,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-3 space-y-1 overflow-y-auto" role="navigation" aria-label="Main navigation">
+      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Main navigation">
         {navItems.map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
@@ -83,7 +83,7 @@ export function Sidebar() {
           </Link>
         ))}
 
-        <div className="pt-4 mt-4 border-t border-slate-200/60 dark:border-slate-800/40">
+        <div className="pt-4 mt-4 border-t border-slate-200/50 dark:border-slate-800/30">
           <Link
             href="/settings"
             className={cn(
@@ -101,7 +101,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="p-3 space-y-2 border-t border-slate-200/60 dark:border-slate-800/40">
+      <div className="px-3 py-4 space-y-3 border-t border-slate-200/50 dark:border-slate-800/30">
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
@@ -126,9 +126,9 @@ export function Sidebar() {
         {session?.user && (
           <div
             className={cn(
-              "flex items-center gap-3 px-3 py-2 rounded-xl",
-              "bg-slate-50 dark:bg-white/5",
-              collapsed && "justify-center px-0"
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl",
+              "bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/50 dark:border-slate-800/30",
+              collapsed && "justify-center px-0 border-0 bg-transparent dark:bg-transparent"
             )}
           >
             {session.user.image && (
@@ -154,7 +154,7 @@ export function Sidebar() {
         <button
           onClick={() => signOut({ callbackUrl: "/" })}
           className={cn(
-            "nav-link w-full text-rose-500 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/20",
+            "nav-link w-full text-rose-500 dark:text-rose-400 hover:bg-rose-50/70 dark:hover:bg-rose-950/20",
             collapsed && "justify-center px-0"
           )}
           title={collapsed ? "Sign Out" : undefined}

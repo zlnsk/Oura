@@ -32,12 +32,12 @@ export const DualIntradayChart = memo(function DualIntradayChart({
     return (
       <div className="premium-card p-6">
         {title && (
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">
             {title}
           </h3>
         )}
-        <div className="flex items-center justify-center h-[120px] text-xs text-slate-400">
-          No data available for this day
+        <div className="flex items-center justify-center h-[120px] text-sm text-slate-400 dark:text-slate-500">
+          No data available
         </div>
       </div>
     );
@@ -54,15 +54,15 @@ export const DualIntradayChart = memo(function DualIntradayChart({
     <div className="premium-card p-6">
       {title && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">
             {title}
           </h3>
           <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
             {avgHR !== null && (
-              <span>Avg HR: <span className="font-semibold text-rose-500">{avgHR} bpm</span></span>
+              <span>Avg HR: <span className="font-medium text-rose-500">{avgHR} bpm</span></span>
             )}
             {avgMET !== null && (
-              <span>Avg MET: <span className="font-semibold text-amber-500">{avgMET}</span></span>
+              <span>Avg MET: <span className="font-medium text-amber-500">{avgMET}</span></span>
             )}
           </div>
         </div>
@@ -71,12 +71,13 @@ export const DualIntradayChart = memo(function DualIntradayChart({
         <ComposedChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -10 }}>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke={isDark ? "#1e293b" : "#e2e8f0"}
+            stroke={isDark ? "#ffffff" : "#000000"}
+            strokeOpacity={isDark ? 0.08 : 0.04}
             vertical={false}
           />
           <XAxis
             dataKey="time"
-            tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
+            tick={{ fontSize: 10, fill: isDark ? "#525868" : "#a0a7b5" }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
@@ -84,7 +85,7 @@ export const DualIntradayChart = memo(function DualIntradayChart({
           />
           <YAxis
             yAxisId="hr"
-            tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
+            tick={{ fontSize: 10, fill: isDark ? "#525868" : "#a0a7b5" }}
             axisLine={false}
             tickLine={false}
             domain={["auto", "auto"]}
@@ -92,18 +93,20 @@ export const DualIntradayChart = memo(function DualIntradayChart({
           <YAxis
             yAxisId="met"
             orientation="right"
-            tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
+            tick={{ fontSize: 10, fill: isDark ? "#525868" : "#a0a7b5" }}
             axisLine={false}
             tickLine={false}
             domain={[0, 10]}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: isDark ? "#1e1e2a" : "#ffffff",
-              border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-              borderRadius: "12px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-              padding: "8px 12px",
+              backgroundColor: isDark ? "#1a1a24" : "#ffffff",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9"}`,
+              borderRadius: "16px",
+              boxShadow: isDark
+                ? "0 4px 16px rgba(0,0,0,0.3)"
+                : "0 4px 16px rgba(0,0,0,0.08)",
+              padding: "10px 14px",
               fontSize: 12,
             }}
             formatter={(value: number, name: string) => {
@@ -127,16 +130,16 @@ export const DualIntradayChart = memo(function DualIntradayChart({
             dataKey="met"
             fill="#f59e0b"
             fillOpacity={0.35}
-            radius={[1, 1, 0, 0]}
+            radius={[8, 8, 0, 0]}
           />
           <Line
             yAxisId="hr"
             type="monotone"
             dataKey="hr"
             stroke="#f43f5e"
-            strokeWidth={1.5}
+            strokeWidth={2}
             dot={false}
-            activeDot={{ r: 3, fill: "#f43f5e" }}
+            activeDot={{ r: 4, fill: "#f43f5e", stroke: "none" }}
             connectNulls
           />
         </ComposedChart>

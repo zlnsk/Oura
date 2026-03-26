@@ -46,7 +46,11 @@ export default function StressPage() {
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-            <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
@@ -57,7 +61,7 @@ export default function StressPage() {
       {!loading && !data && <EmptyState />}
 
       {data && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <AISummaryCard page="stress" data={data} />
 
           {/* Stats */}
@@ -101,7 +105,7 @@ export default function StressPage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
+            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h3>
             <DateRangeSelector />
           </div>
 
@@ -163,7 +167,7 @@ export default function StressPage() {
           {/* Resilience */}
           {resilience.length > 0 && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
                 Resilience Levels
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">

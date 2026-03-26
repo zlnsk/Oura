@@ -188,7 +188,7 @@ export default function SettingsPage() {
         iconColor="#64748b"
       />
 
-      <div className="max-w-2xl space-y-6 animate-fade-in">
+      <div className="max-w-2xl space-y-6">
         {/* Oura API Key Configuration */}
         <div className="premium-card overflow-hidden">
           <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
@@ -345,7 +345,7 @@ export default function SettingsPage() {
                 >
                   console.anthropic.com
                 </a>
-                {" "}— your key overrides the server default if one exists
+                {" "}&mdash; your key overrides the server default if one exists
               </p>
             </div>
 
@@ -390,11 +390,11 @@ export default function SettingsPage() {
             <div>
               <h3 className="font-semibold text-sm">Security & Privacy</h3>
               <ul className="mt-2 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
-                <li>• All API keys are stored as secure, HTTP-only browser cookies</li>
-                <li>• Keys are never stored on the server or in any database</li>
-                <li>• Each user&apos;s data is fully isolated — no one else can see your data</li>
-                <li>• AI analysis is processed through Anthropic&apos;s API with no data retention</li>
-                <li>• All API calls are made server-side to protect your tokens</li>
+                <li>&#8226; All API keys are stored as secure, HTTP-only browser cookies</li>
+                <li>&#8226; Keys are never stored on the server or in any database</li>
+                <li>&#8226; Each user&apos;s data is fully isolated &mdash; no one else can see your data</li>
+                <li>&#8226; AI analysis is processed through Anthropic&apos;s API with no data retention</li>
+                <li>&#8226; All API calls are made server-side to protect your tokens</li>
               </ul>
             </div>
           </div>

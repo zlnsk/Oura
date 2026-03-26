@@ -41,12 +41,12 @@ export const IntradayChart = memo(function IntradayChart({
     return (
       <div className="premium-card p-6">
         {title && (
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">
             {title}
           </h3>
         )}
-        <div className="flex items-center justify-center h-[120px] text-xs text-slate-400">
-          No data available for this day
+        <div className="flex items-center justify-center h-[120px] text-sm text-slate-400 dark:text-slate-500">
+          No data available
         </div>
       </div>
     );
@@ -56,12 +56,12 @@ export const IntradayChart = memo(function IntradayChart({
     <div className="premium-card p-6">
       {title && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">
+          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">
             {title}
           </h3>
           {avgValue !== undefined && (
             <span className="text-xs text-slate-500 dark:text-slate-400">
-              Avg: <span className="font-semibold" style={{ color }}>{avgValue}{unit}</span>
+              Avg: <span className="font-medium" style={{ color }}>{avgValue}{unit}</span>
             </span>
           )}
         </div>
@@ -70,36 +70,39 @@ export const IntradayChart = memo(function IntradayChart({
         <AreaChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: -10 }}>
           <defs>
             <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.15} />
               <stop offset="100%" stopColor={color} stopOpacity={0} />
             </linearGradient>
           </defs>
           <CartesianGrid
             strokeDasharray="3 3"
-            stroke={isDark ? "#1e293b" : "#e2e8f0"}
+            stroke={isDark ? "#ffffff" : "#000000"}
+            strokeOpacity={isDark ? 0.08 : 0.04}
             vertical={false}
           />
           <XAxis
             dataKey="time"
-            tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
+            tick={{ fontSize: 10, fill: isDark ? "#525868" : "#a0a7b5" }}
             axisLine={false}
             tickLine={false}
             interval="preserveStartEnd"
             minTickGap={40}
           />
           <YAxis
-            tick={{ fontSize: 10, fill: isDark ? "#64748b" : "#94a3b8" }}
+            tick={{ fontSize: 10, fill: isDark ? "#525868" : "#a0a7b5" }}
             axisLine={false}
             tickLine={false}
             domain={domain || ["auto", "auto"]}
           />
           <Tooltip
             contentStyle={{
-              backgroundColor: isDark ? "#1e1e2a" : "#ffffff",
-              border: `1px solid ${isDark ? "#334155" : "#e2e8f0"}`,
-              borderRadius: "12px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
-              padding: "8px 12px",
+              backgroundColor: isDark ? "#1a1a24" : "#ffffff",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9"}`,
+              borderRadius: "16px",
+              boxShadow: isDark
+                ? "0 4px 16px rgba(0,0,0,0.3)"
+                : "0 4px 16px rgba(0,0,0,0.08)",
+              padding: "10px 14px",
               fontSize: 12,
             }}
             formatter={(value: number) => [`${value}${unit}`, ""]}
@@ -117,10 +120,10 @@ export const IntradayChart = memo(function IntradayChart({
             type="monotone"
             dataKey="value"
             stroke={color}
-            strokeWidth={1.5}
+            strokeWidth={2}
             fill={`url(#${gradientId})`}
             dot={false}
-            activeDot={{ r: 3, fill: color }}
+            activeDot={{ r: 4, fill: color, stroke: "none" }}
           />
         </AreaChart>
       </ResponsiveContainer>

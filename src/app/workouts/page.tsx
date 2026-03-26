@@ -89,7 +89,11 @@ export default function WorkoutsPage() {
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
-            <button onClick={fetchData} disabled={loading} className="btn-secondary text-sm px-3 py-2">
+            <button
+              onClick={fetchData}
+              disabled={loading}
+              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+            >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
           </div>
@@ -100,7 +104,7 @@ export default function WorkoutsPage() {
       {!loading && !data && <EmptyState />}
 
       {data && (
-        <div className="space-y-6 animate-fade-in">
+        <div className="space-y-6">
           <AISummaryCard page="workouts" data={data} />
 
           {/* Day stats */}
@@ -120,13 +124,13 @@ export default function WorkoutsPage() {
             />
             <StatCard
               label="Total Duration"
-              value={dayWorkouts.length > 0 ? formatDuration(dayTotalDuration) : "—"}
+              value={dayWorkouts.length > 0 ? formatDuration(dayTotalDuration) : "\u2014"}
               icon={Clock}
               color="#06b6d4"
             />
             <StatCard
               label="Distance"
-              value={dayWorkouts.length > 0 ? (dayDistance / 1000).toFixed(1) : "—"}
+              value={dayWorkouts.length > 0 ? (dayDistance / 1000).toFixed(1) : "\u2014"}
               unit={dayWorkouts.length > 0 ? "km" : ""}
               icon={MapPin}
               color="#10b981"
@@ -162,7 +166,7 @@ export default function WorkoutsPage() {
                           </p>
                           <p className="text-xs text-slate-400">
                             {new Date(w.start_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                            {" — "}
+                            {" \u2014 "}
                             {new Date(w.end_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                           </p>
                         </div>
@@ -259,7 +263,7 @@ export default function WorkoutsPage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
+            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h3>
             <DateRangeSelector />
           </div>
 
@@ -279,13 +283,13 @@ export default function WorkoutsPage() {
             />
             <StatCard
               label="Avg Duration"
-              value={allWorkouts.length > 0 ? formatDuration(periodAvgDuration) : "—"}
+              value={allWorkouts.length > 0 ? formatDuration(periodAvgDuration) : "\u2014"}
               icon={Clock}
               color="#06b6d4"
             />
             <StatCard
               label="Total Distance"
-              value={allWorkouts.length > 0 ? (allWorkouts.reduce((s, w) => s + (w.distance || 0), 0) / 1000).toFixed(1) : "—"}
+              value={allWorkouts.length > 0 ? (allWorkouts.reduce((s, w) => s + (w.distance || 0), 0) / 1000).toFixed(1) : "\u2014"}
               unit={allWorkouts.length > 0 ? "km" : ""}
               icon={MapPin}
               color="#10b981"

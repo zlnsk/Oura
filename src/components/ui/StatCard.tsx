@@ -38,9 +38,9 @@ export function StatCard({
     >
       <div className="flex items-start justify-between">
         <div>
-          <p className="stat-label">{label}</p>
+          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{label}</p>
           <div className="mt-2 flex items-baseline gap-1.5">
-            <span className="stat-value" style={color ? { color } : undefined}>
+            <span className="text-2xl font-semibold tracking-tight" style={color ? { color } : undefined}>
               {value}
             </span>
             {unit && (
@@ -50,12 +50,11 @@ export function StatCard({
         </div>
         {Icon && (
           <div
-            className={cn(
-              "w-10 h-10 rounded-xl flex items-center justify-center",
-              "bg-slate-100 dark:bg-white/5",
-              "group-hover:scale-110 transition-transform duration-300"
-            )}
-            style={color ? { color } : undefined}
+            className="w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300"
+            style={{
+              backgroundColor: color ? `${color}12` : undefined,
+              color: color || undefined,
+            }}
           >
             <Icon className="w-5 h-5" />
           </div>
