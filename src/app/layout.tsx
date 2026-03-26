@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: "Oura Analytics | Premium Health Dashboard",
   description: "Comprehensive Oura Ring data analytics and AI-powered insights",
   icons: { icon: "/favicon.ico" },
-  metadataBase: new URL(process.env.NEXTAUTH_URL || "https://localhost:3000"),
+  metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
   openGraph: {
     title: "Oura Analytics",
     description: "Premium health insights powered by your Oura Ring data and AI",
