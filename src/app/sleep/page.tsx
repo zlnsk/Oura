@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -10,10 +10,8 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { SleepStagesChart } from "@/components/charts/SleepStagesChart";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { IntradayChart } from "@/components/charts/IntradayChart";
+import { LazyScoreLineChart as ScoreLineChart, LazySleepStagesChart as SleepStagesChart, LazyMultiLineChart as MultiLineChart, LazyIntradayChart as IntradayChart } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import {
   BedDouble,
   Clock,
@@ -76,6 +74,9 @@ export default function SleepPage() {
 
   const allPeriods = data?.sleepPeriods || [];
   const periods = allPeriods.filter((p) => p.type === "long_sleep");
+  const naps = allPeriods.filter(
+    (p) => p.type !== "long_sleep" && p.total_sleep_duration > 0
+  );
   const dailySleep = data?.sleep || [];
 
   // Find selected day's sleep data (strict match, no fallback to avoid stale data)
@@ -163,6 +164,76 @@ export default function SleepPage() {
             </div>
           </div>
 
+          {/* Naps for selected day */}
+          {naps.filter((n) => n.day === selectedDate).length > 0 && (
+            <div className="premium-card p-6">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">
+                Naps
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {naps
+                  .filter((n) => n.day === selectedDate)
+                  .map((nap) => (
+                    <div
+                      key={nap.id}
+                      className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 space-y-1"
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                          {new Date(nap.bedtime_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                          {" — "}
+                          {new Date(nap.bedtime_end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                        </span>
+                        <span className="text-xs font-medium text-indigo-500">
+                          {formatDuration(nap.total_sleep_duration)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                        <span>Deep: {formatDuration(nap.deep_sleep_duration)}</span>
+                        <span>REM: {formatDuration(nap.rem_sleep_duration)}</span>
+                        <span>Light: {formatDuration(nap.light_sleep_duration)}</span>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            </div>
+          )}
+
+          {/* Nap trends (period-wide) */}
+          {naps.length > 0 && (
+            <div className="premium-card p-6">
+              <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                Nap Summary
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="stat-label">Total Naps</p>
+                  <p className="text-xl font-bold mt-1">{naps.length}</p>
+                </div>
+                <div>
+                  <p className="stat-label">Avg Nap Duration</p>
+                  <p className="text-xl font-bold mt-1">
+                    {formatDuration(
+                      naps.reduce((s, n) => s + n.total_sleep_duration, 0) / naps.length
+                    )}
+                  </p>
+                </div>
+                <div>
+                  <p className="stat-label">Total Nap Time</p>
+                  <p className="text-xl font-bold mt-1">
+                    {formatDuration(naps.reduce((s, n) => s + n.total_sleep_duration, 0))}
+                  </p>
+                </div>
+                <div>
+                  <p className="stat-label">Days with Naps</p>
+                  <p className="text-xl font-bold mt-1">
+                    {new Set(naps.map((n) => n.day)).size}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Intraday HR & HRV during sleep */}
           {(sleepHR.length > 0 || sleepHRV.length > 0) && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -229,41 +300,47 @@ export default function SleepPage() {
           </div>
 
           {/* Sleep score chart */}
-          <ScoreLineChart
-            data={dailySleep}
-            title="Sleep Score Over Time"
-            color="#6366f1"
-            gradientId="sleepScoreGrad"
-            domain={[40, 100]}
-          />
+          <Suspense fallback={<ChartSkeleton />}>
+            <ScoreLineChart
+              data={dailySleep}
+              title="Sleep Score Over Time"
+              color="#6366f1"
+              gradientId="sleepScoreGrad"
+              domain={[40, 100]}
+            />
+          </Suspense>
 
           {/* Sleep stages */}
-          <SleepStagesChart data={periods} />
+          <Suspense fallback={<ChartSkeleton height={320} />}>
+            <SleepStagesChart data={periods} />
+          </Suspense>
 
           {/* HRV & HR during sleep trends */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ScoreLineChart
-              data={periods.map((p) => ({ day: p.day, score: p.average_hrv }))}
-              dataKey="score"
-              title="HRV During Sleep (Trend)"
-              color="#8b5cf6"
-              gradientId="hrvGrad"
-              unit=" ms"
-            />
-            <MultiLineChart
-              data={periods.map((p) => ({
-                day: p.day,
-                avg: p.average_heart_rate,
-                lowest: p.lowest_heart_rate,
-              }))}
-              lines={[
-                { key: "avg", color: "#f43f5e", name: "Avg HR" },
-                { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
-              ]}
-              title="Heart Rate During Sleep (Trend)"
-              unit=" bpm"
-            />
-          </div>
+          <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><ChartSkeleton /><ChartSkeleton /></div>}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ScoreLineChart
+                data={periods.map((p) => ({ day: p.day, score: p.average_hrv }))}
+                dataKey="score"
+                title="HRV During Sleep (Trend)"
+                color="#8b5cf6"
+                gradientId="hrvGrad"
+                unit=" ms"
+              />
+              <MultiLineChart
+                data={periods.map((p) => ({
+                  day: p.day,
+                  avg: p.average_heart_rate,
+                  lowest: p.lowest_heart_rate,
+                }))}
+                lines={[
+                  { key: "avg", color: "#f43f5e", name: "Avg HR" },
+                  { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
+                ]}
+                title="Heart Rate During Sleep (Trend)"
+                unit=" bpm"
+              />
+            </div>
+          </Suspense>
 
           {/* Sleep contributors */}
           {selectedDailySleep?.contributors && (

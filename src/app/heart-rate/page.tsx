@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -9,9 +9,8 @@ import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { BarChartComponent } from "@/components/charts/BarChartComponent";
+import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineChart, LazyBarChartComponent as BarChartComponent } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Heart, TrendingDown, Activity, Wind, RefreshCw } from "lucide-react";
 import { trend } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
@@ -140,56 +139,58 @@ export default function HeartRatePage() {
           </div>
 
           {/* Daily HR trends */}
-          <MultiLineChart
-            data={dailyHR}
-            lines={[
-              { key: "max", color: "#f43f5e", name: "Max HR" },
-              { key: "avg", color: "#f59e0b", name: "Avg HR" },
-              { key: "min", color: "#06b6d4", name: "Min HR" },
-            ]}
-            title="Daily Heart Rate Range"
-            unit=" bpm"
-            height={320}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Resting HR during sleep */}
+          <Suspense fallback={<ChartSkeleton height={320} />}>
             <MultiLineChart
-              data={sleepPeriods.map((s) => ({
-                day: s.day,
-                avg: s.average_heart_rate,
-                lowest: s.lowest_heart_rate,
-              }))}
+              data={dailyHR}
               lines={[
-                { key: "avg", color: "#f43f5e", name: "Avg HR" },
-                { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
+                { key: "max", color: "#f43f5e", name: "Max HR" },
+                { key: "avg", color: "#f59e0b", name: "Avg HR" },
+                { key: "min", color: "#06b6d4", name: "Min HR" },
               ]}
-              title="Heart Rate During Sleep"
+              title="Daily Heart Rate Range"
               unit=" bpm"
+              height={320}
             />
 
-            {/* HRV trend */}
-            <ScoreLineChart
-              data={sleepPeriods.map((s) => ({
-                day: s.day,
-                score: s.average_hrv,
-              }))}
-              dataKey="score"
-              title="HRV Trend"
-              color="#8b5cf6"
-              gradientId="hrvTrendGrad"
-              unit=" ms"
-            />
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              {/* Resting HR during sleep */}
+              <MultiLineChart
+                data={sleepPeriods.map((s) => ({
+                  day: s.day,
+                  avg: s.average_heart_rate,
+                  lowest: s.lowest_heart_rate,
+                }))}
+                lines={[
+                  { key: "avg", color: "#f43f5e", name: "Avg HR" },
+                  { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
+                ]}
+                title="Heart Rate During Sleep"
+                unit=" bpm"
+              />
 
-          {/* HR distribution */}
-          <BarChartComponent
-            data={hrDistribution}
-            dataKey="count"
-            title="Heart Rate Distribution"
-            color="#f43f5e"
-            unit=" readings"
-          />
+              {/* HRV trend */}
+              <ScoreLineChart
+                data={sleepPeriods.map((s) => ({
+                  day: s.day,
+                  score: s.average_hrv,
+                }))}
+                dataKey="score"
+                title="HRV Trend"
+                color="#8b5cf6"
+                gradientId="hrvTrendGrad"
+                unit=" ms"
+              />
+            </div>
+
+            {/* HR distribution */}
+            <BarChartComponent
+              data={hrDistribution}
+              dataKey="count"
+              title="Heart Rate Distribution"
+              color="#f43f5e"
+              unit=" readings"
+            />
+          </Suspense>
         </div>
       )}
     </DashboardShell>

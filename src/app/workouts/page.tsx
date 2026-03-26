@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -9,7 +9,8 @@ import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { BarChartComponent } from "@/components/charts/BarChartComponent";
+import { LazyBarChartComponent as BarChartComponent } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import {
   Dumbbell,
   Flame,
@@ -293,13 +294,15 @@ export default function WorkoutsPage() {
 
           {/* Calories chart */}
           {caloriesByDay.length > 0 && (
-            <BarChartComponent
-              data={caloriesByDay}
-              dataKey="calories"
-              title="Workout Calories"
-              color="#f59e0b"
-              unit=" cal"
-            />
+            <Suspense fallback={<ChartSkeleton />}>
+              <BarChartComponent
+                data={caloriesByDay}
+                dataKey="calories"
+                title="Workout Calories"
+                color="#f59e0b"
+                unit=" cal"
+              />
+            </Suspense>
           )}
         </div>
       )}

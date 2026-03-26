@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -10,9 +10,8 @@ import { ScoreRing } from "@/components/ui/ScoreRing";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { DualIntradayChart } from "@/components/charts/DualIntradayChart";
+import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineChart, LazyDualIntradayChart as DualIntradayChart } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import {
   LayoutDashboard,
   BedDouble,
@@ -556,44 +555,46 @@ export default function DashboardPage() {
           </div>
 
           {/* Charts row */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ScoreLineChart
-              data={data.sleep}
-              title="Sleep Score Trend"
-              color="#6366f1"
-              gradientId="sleepGrad"
-              domain={[40, 100]}
-            />
-            <ScoreLineChart
-              data={data.readiness}
-              title="Readiness Score Trend"
-              color="#10b981"
-              gradientId="readinessGrad"
-              domain={[40, 100]}
-            />
-          </div>
+          <Suspense fallback={<div className="grid grid-cols-1 lg:grid-cols-2 gap-6"><ChartSkeleton /><ChartSkeleton /></div>}>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ScoreLineChart
+                data={data.sleep}
+                title="Sleep Score Trend"
+                color="#6366f1"
+                gradientId="sleepGrad"
+                domain={[40, 100]}
+              />
+              <ScoreLineChart
+                data={data.readiness}
+                title="Readiness Score Trend"
+                color="#10b981"
+                gradientId="readinessGrad"
+                domain={[40, 100]}
+              />
+            </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <ScoreLineChart
-              data={data.activity}
-              title="Activity Score Trend"
-              color="#f59e0b"
-              gradientId="activityGrad"
-              domain={[40, 100]}
-            />
-            <MultiLineChart
-              data={data.sleepPeriods.map((s) => ({
-                day: s.day,
-                hr: s.average_heart_rate,
-                hrv: s.average_hrv,
-              }))}
-              lines={[
-                { key: "hr", color: "#f43f5e", name: "Heart Rate" },
-                { key: "hrv", color: "#8b5cf6", name: "HRV" },
-              ]}
-              title="Heart Rate & HRV During Sleep"
-            />
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ScoreLineChart
+                data={data.activity}
+                title="Activity Score Trend"
+                color="#f59e0b"
+                gradientId="activityGrad"
+                domain={[40, 100]}
+              />
+              <MultiLineChart
+                data={data.sleepPeriods.map((s) => ({
+                  day: s.day,
+                  hr: s.average_heart_rate,
+                  hrv: s.average_hrv,
+                }))}
+                lines={[
+                  { key: "hr", color: "#f43f5e", name: "Heart Rate" },
+                  { key: "hrv", color: "#8b5cf6", name: "HRV" },
+                ]}
+                title="Heart Rate & HRV During Sleep"
+              />
+            </div>
+          </Suspense>
 
         </div>
       )}

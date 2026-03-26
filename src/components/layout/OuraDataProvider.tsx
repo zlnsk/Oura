@@ -40,6 +40,8 @@ interface OuraDataContextType {
   setDays: (days: number) => void;
   fetchData: () => Promise<void>;
   lastUpdated: number | null;
+  isOffline: boolean;
+  isStale: boolean;
 }
 
 const defaultData: DashboardData = {
@@ -68,6 +70,8 @@ const OuraDataContext = createContext<OuraDataContextType>({
   setDays: () => {},
   fetchData: async () => {},
   lastUpdated: null,
+  isOffline: false,
+  isStale: false,
 });
 
 export function OuraDataProvider({ children }: { children: React.ReactNode }) {
@@ -76,7 +80,23 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [days, setDays] = useState(30);
   const [lastUpdated, setLastUpdated] = useState<number | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
+  const [isStale, setIsStale] = useState(false);
   const hydratedRef = useRef(false);
+
+  // Track online/offline status
+  useEffect(() => {
+    const goOnline = () => setIsOffline(false);
+    const goOffline = () => setIsOffline(true);
+
+    setIsOffline(!navigator.onLine);
+    window.addEventListener("online", goOnline);
+    window.addEventListener("offline", goOffline);
+    return () => {
+      window.removeEventListener("online", goOnline);
+      window.removeEventListener("offline", goOffline);
+    };
+  }, []);
 
   // Load cached data on mount
   useEffect(() => {
@@ -86,10 +106,23 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     if (entry && entry.days === days) {
       setData({ ...defaultData, ...entry.data });
       setLastUpdated(entry.timestamp);
+      setIsStale(Date.now() - entry.timestamp > STALE_MS);
     }
   }, [days]);
 
   const fetchData = useCallback(async () => {
+    // If offline, serve from cache and mark stale
+    if (!navigator.onLine) {
+      const entry = readCacheEntry();
+      if (entry) {
+        setData({ ...defaultData, ...entry.data });
+        setLastUpdated(entry.timestamp);
+        setIsStale(true);
+      }
+      setError("You are offline. Showing cached data.");
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
@@ -103,12 +136,26 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
       setData(merged);
       writeCache(merged, days);
       setLastUpdated(Date.now());
+      setIsStale(false);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Unknown error");
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setError(message);
+
+      // Stale-while-revalidate: fall back to cache on fetch failure
+      if (!data) {
+        const entry = readCacheEntry();
+        if (entry) {
+          setData({ ...defaultData, ...entry.data });
+          setLastUpdated(entry.timestamp);
+          setIsStale(true);
+        }
+      } else {
+        setIsStale(true);
+      }
     } finally {
       setLoading(false);
     }
-  }, [days]);
+  }, [days, data]);
 
   // Re-fetch when days changes
   const prevDaysRef = useRef(days);
@@ -121,7 +168,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <OuraDataContext.Provider
-      value={{ data, loading, error, days, setDays, fetchData, lastUpdated }}
+      value={{ data, loading, error, days, setDays, fetchData, lastUpdated, isOffline, isStale }}
     >
       {children}
     </OuraDataContext.Provider>

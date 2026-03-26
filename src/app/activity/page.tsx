@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -10,10 +10,8 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { BarChartComponent } from "@/components/charts/BarChartComponent";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
-import { DualIntradayChart } from "@/components/charts/DualIntradayChart";
+import { LazyScoreLineChart as ScoreLineChart, LazyBarChartComponent as BarChartComponent, LazyMultiLineChart as MultiLineChart, LazyDualIntradayChart as DualIntradayChart } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import {
   Activity,
   Footprints,
@@ -225,48 +223,50 @@ export default function ActivityPage() {
           </div>
 
           {/* Charts */}
-          <ScoreLineChart
-            data={activities}
-            title="Activity Score Trend"
-            color="#10b981"
-            gradientId="actScoreGrad"
-            domain={[40, 100]}
-          />
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <BarChartComponent
-              data={activities.map((a) => ({ day: a.day, steps: a.steps }))}
-              dataKey="steps"
-              title="Daily Steps"
+          <Suspense fallback={<ChartSkeleton />}>
+            <ScoreLineChart
+              data={activities}
+              title="Activity Score Trend"
               color="#10b981"
+              gradientId="actScoreGrad"
+              domain={[40, 100]}
             />
-            <BarChartComponent
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+              <BarChartComponent
+                data={activities.map((a) => ({ day: a.day, steps: a.steps }))}
+                dataKey="steps"
+                title="Daily Steps"
+                color="#10b981"
+              />
+              <BarChartComponent
+                data={activities.map((a) => ({
+                  day: a.day,
+                  calories: a.total_calories,
+                }))}
+                dataKey="calories"
+                title="Daily Calories"
+                color="#f59e0b"
+                unit=" cal"
+              />
+            </div>
+
+            <MultiLineChart
               data={activities.map((a) => ({
                 day: a.day,
-                calories: a.total_calories,
+                high: Math.round((a.high_activity_time || 0) / 60),
+                medium: Math.round((a.medium_activity_time || 0) / 60),
+                low: Math.round((a.low_activity_time || 0) / 60),
               }))}
-              dataKey="calories"
-              title="Daily Calories"
-              color="#f59e0b"
-              unit=" cal"
+              lines={[
+                { key: "high", color: "#f43f5e", name: "High (min)" },
+                { key: "medium", color: "#f59e0b", name: "Medium (min)" },
+                { key: "low", color: "#06b6d4", name: "Low (min)" },
+              ]}
+              title="Activity Levels Over Time"
+              unit=" min"
             />
-          </div>
-
-          <MultiLineChart
-            data={activities.map((a) => ({
-              day: a.day,
-              high: Math.round((a.high_activity_time || 0) / 60),
-              medium: Math.round((a.medium_activity_time || 0) / 60),
-              low: Math.round((a.low_activity_time || 0) / 60),
-            }))}
-            lines={[
-              { key: "high", color: "#f43f5e", name: "High (min)" },
-              { key: "medium", color: "#f59e0b", name: "Medium (min)" },
-              { key: "low", color: "#06b6d4", name: "Low (min)" },
-            ]}
-            title="Activity Levels Over Time"
-            unit=" min"
-          />
+          </Suspense>
 
           {/* Contributors */}
           {selected?.contributors && (

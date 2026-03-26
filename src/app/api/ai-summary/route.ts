@@ -2,19 +2,54 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 
-// Simple in-memory rate limiter per user email
-const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 const DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "20", 10);
+const AI_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-20250514";
 
-function checkRateLimit(email: string): { allowed: boolean; remaining: number } {
+// ---------------------------------------------------------------------------
+// Persistent rate limiter backed by a simple JSON file on the server.
+// Falls back to in-memory when the filesystem is unavailable (e.g. edge).
+// ---------------------------------------------------------------------------
+
+interface RateLimitStore {
+  [email: string]: { count: number; resetAt: number };
+}
+
+let memoryStore: RateLimitStore = {};
+
+async function loadStore(): Promise<RateLimitStore> {
+  try {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const filePath = path.join(process.cwd(), ".rate-limit-store.json");
+    const raw = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(raw) as RateLimitStore;
+  } catch {
+    return memoryStore;
+  }
+}
+
+async function saveStore(store: RateLimitStore): Promise<void> {
+  memoryStore = store;
+  try {
+    const fs = await import("fs/promises");
+    const path = await import("path");
+    const filePath = path.join(process.cwd(), ".rate-limit-store.json");
+    await fs.writeFile(filePath, JSON.stringify(store), "utf-8");
+  } catch {
+    // filesystem unavailable – memory-only
+  }
+}
+
+async function checkRateLimit(email: string): Promise<{ allowed: boolean; remaining: number }> {
+  const store = await loadStore();
   const now = Date.now();
-  const entry = rateLimitMap.get(email);
+  const entry = store[email];
 
   if (!entry || now > entry.resetAt) {
-    // Reset at midnight UTC
     const tomorrow = new Date();
     tomorrow.setUTCHours(24, 0, 0, 0);
-    rateLimitMap.set(email, { count: 1, resetAt: tomorrow.getTime() });
+    store[email] = { count: 1, resetAt: tomorrow.getTime() };
+    await saveStore(store);
     return { allowed: true, remaining: DAILY_LIMIT - 1 };
   }
 
@@ -23,16 +58,9 @@ function checkRateLimit(email: string): { allowed: boolean; remaining: number } 
   }
 
   entry.count++;
+  await saveStore(store);
   return { allowed: true, remaining: DAILY_LIMIT - entry.count };
 }
-
-// Clean up stale entries periodically
-setInterval(() => {
-  const now = Date.now();
-  rateLimitMap.forEach((entry, key) => {
-    if (now > entry.resetAt) rateLimitMap.delete(key);
-  });
-}, 60 * 60 * 1000); // every hour
 
 export async function POST(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -52,7 +80,7 @@ export async function POST(req: NextRequest) {
 
   // Rate limit per user
   const userEmail = session.user?.email || "unknown";
-  const { allowed, remaining } = checkRateLimit(userEmail);
+  const { allowed, remaining } = await checkRateLimit(userEmail);
   if (!allowed) {
     return NextResponse.json(
       { error: `Daily AI summary limit reached (${DAILY_LIMIT}/day). Resets at midnight UTC.` },
@@ -74,7 +102,7 @@ export async function POST(req: NextRequest) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
+        model: AI_MODEL,
         max_tokens: 512,
         messages: [
           {

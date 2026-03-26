@@ -19,6 +19,29 @@ function LoadingBar() {
   );
 }
 
+function OfflineBanner() {
+  const { isOffline, isStale, lastUpdated } = useOuraData();
+
+  if (!isOffline && !isStale) return null;
+
+  const timeLabel = lastUpdated
+    ? new Date(lastUpdated).toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+      })
+    : "unknown";
+
+  return (
+    <div className="fixed top-0 left-64 right-0 z-40 px-4 py-2 text-xs text-center font-medium bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-b border-amber-200 dark:border-amber-800/40">
+      {isOffline
+        ? `You are offline. Showing cached data from ${timeLabel}.`
+        : `Showing cached data from ${timeLabel}. Pull to refresh.`}
+    </div>
+  );
+}
+
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -45,6 +68,7 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-[#0a0a0f]">
       <LoadingBar />
+      <OfflineBanner />
       <Sidebar />
       <main className="ml-64 p-6 lg:p-8 transition-all duration-300">
         <ErrorBoundary>

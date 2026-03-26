@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -10,8 +10,8 @@ import { StatCard } from "@/components/ui/StatCard";
 import { ScoreRing } from "@/components/ui/ScoreRing";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineChart } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Zap, Thermometer, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
@@ -124,28 +124,30 @@ export default function ReadinessPage() {
             <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Trends</h3>
             <DateRangeSelector />
           </div>
-          <ScoreLineChart
-            data={readiness}
-            title="Readiness Score Trend"
-            color="#f59e0b"
-            gradientId="readScoreGrad"
-            domain={[40, 100]}
-          />
+          <Suspense fallback={<ChartSkeleton />}>
+            <ScoreLineChart
+              data={readiness}
+              title="Readiness Score Trend"
+              color="#f59e0b"
+              gradientId="readScoreGrad"
+              domain={[40, 100]}
+            />
 
-          {/* Temperature */}
-          <MultiLineChart
-            data={readiness.map((r) => ({
-              day: r.day,
-              deviation: Number((r.temperature_deviation || 0).toFixed(2)),
-              trend: Number((r.temperature_trend_deviation || 0).toFixed(2)),
-            }))}
-            lines={[
-              { key: "deviation", color: "#f43f5e", name: "Temp Deviation" },
-              { key: "trend", color: "#06b6d4", name: "Temp Trend" },
-            ]}
-            title="Body Temperature Deviation"
-            unit="°C"
-          />
+            {/* Temperature */}
+            <MultiLineChart
+              data={readiness.map((r) => ({
+                day: r.day,
+                deviation: Number((r.temperature_deviation || 0).toFixed(2)),
+                trend: Number((r.temperature_trend_deviation || 0).toFixed(2)),
+              }))}
+              lines={[
+                { key: "deviation", color: "#f43f5e", name: "Temp Deviation" },
+                { key: "trend", color: "#06b6d4", name: "Temp Trend" },
+              ]}
+              title="Body Temperature Deviation"
+              unit="°C"
+            />
+          </Suspense>
 
           {/* Contributors */}
           {latest?.contributors && (

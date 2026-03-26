@@ -1,4 +1,5 @@
 const OURA_BASE_URL = "https://api.ouraring.com/v2/usercollection";
+const CHUNK_SIZE_DAYS = 90;
 
 export async function fetchOuraData(
   endpoint: string,
@@ -62,33 +63,115 @@ export function getDateTimeRange(days: number) {
   };
 }
 
+// ---------------------------------------------------------------------------
+// Chunked date ranges – split large requests into ≤ CHUNK_SIZE_DAYS pieces
+// to avoid Oura API rate limits and timeouts on long ranges.
+// ---------------------------------------------------------------------------
+
+interface DateChunk {
+  start_date: string;
+  end_date: string;
+}
+
+interface DateTimeChunk {
+  start_datetime: string;
+  end_datetime: string;
+}
+
+function chunkDateRange(days: number): DateChunk[] {
+  if (days <= CHUNK_SIZE_DAYS) return [getDateRange(days)];
+
+  const chunks: DateChunk[] = [];
+  const now = new Date();
+  let remaining = days;
+
+  while (remaining > 0) {
+    const chunkDays = Math.min(remaining, CHUNK_SIZE_DAYS);
+    const chunkEnd = new Date(now);
+    chunkEnd.setDate(chunkEnd.getDate() - (days - remaining) + 1); // exclusive
+    const chunkStart = new Date(now);
+    chunkStart.setDate(chunkStart.getDate() - (days - remaining + chunkDays));
+
+    chunks.push({
+      start_date: toLocalDateStr(chunkStart),
+      end_date: toLocalDateStr(chunkEnd),
+    });
+
+    remaining -= chunkDays;
+  }
+
+  return chunks;
+}
+
+function chunkDateTimeRange(days: number): DateTimeChunk[] {
+  if (days <= CHUNK_SIZE_DAYS) return [getDateTimeRange(days)];
+
+  const chunks: DateTimeChunk[] = [];
+  const now = new Date();
+  let remaining = days;
+
+  while (remaining > 0) {
+    const chunkDays = Math.min(remaining, CHUNK_SIZE_DAYS);
+    const chunkEnd = new Date(now);
+    chunkEnd.setDate(chunkEnd.getDate() - (days - remaining));
+    const chunkStart = new Date(now);
+    chunkStart.setDate(chunkStart.getDate() - (days - remaining + chunkDays));
+
+    chunks.push({
+      start_datetime: chunkStart.toISOString(),
+      end_datetime: chunkEnd.toISOString(),
+    });
+
+    remaining -= chunkDays;
+  }
+
+  return chunks;
+}
+
+/** Fetch a single endpoint across all date chunks and merge results. */
+async function fetchChunked(
+  endpoint: string,
+  token: string,
+  chunks: (DateChunk | DateTimeChunk)[]
+): Promise<unknown[]> {
+  const results: unknown[] = [];
+
+  // Sequential to respect rate limits
+  for (const chunk of chunks) {
+    const data = await fetchOuraData(endpoint, token, chunk as Record<string, string>);
+    if (data.data) results.push(...data.data);
+  }
+
+  return results;
+}
+
 export async function fetchAllOuraData(token: string, days: number = 30) {
-  const dateRange = getDateRange(days);
-  const dateTimeRange = getDateTimeRange(days);
+  const dateChunks = chunkDateRange(days);
+  const dateTimeChunks = chunkDateTimeRange(days);
 
   const endpoints = [
-    { key: "sleep", endpoint: "daily_sleep", params: dateRange },
-    { key: "sleepPeriods", endpoint: "sleep", params: dateRange },
-    { key: "activity", endpoint: "daily_activity", params: dateRange },
-    { key: "readiness", endpoint: "daily_readiness", params: dateRange },
-    { key: "heartRate", endpoint: "heartrate", params: dateTimeRange },
-    { key: "stress", endpoint: "daily_stress", params: dateRange },
-    { key: "spo2", endpoint: "daily_spo2", params: dateRange },
-    { key: "resilience", endpoint: "daily_resilience", params: dateRange },
-    { key: "cardiovascularAge", endpoint: "daily_cardiovascular_age", params: dateRange },
-    { key: "workouts", endpoint: "workout", params: dateRange },
-    { key: "sessions", endpoint: "session", params: dateRange },
-    { key: "vo2Max", endpoint: "vo2_max", params: dateRange },
-    { key: "sleepTime", endpoint: "sleep_time", params: dateRange },
-    { key: "tags", endpoint: "tag", params: dateRange },
+    { key: "sleep", endpoint: "daily_sleep", chunks: dateChunks },
+    { key: "sleepPeriods", endpoint: "sleep", chunks: dateChunks },
+    { key: "activity", endpoint: "daily_activity", chunks: dateChunks },
+    { key: "readiness", endpoint: "daily_readiness", chunks: dateChunks },
+    { key: "heartRate", endpoint: "heartrate", chunks: dateTimeChunks },
+    { key: "stress", endpoint: "daily_stress", chunks: dateChunks },
+    { key: "spo2", endpoint: "daily_spo2", chunks: dateChunks },
+    { key: "resilience", endpoint: "daily_resilience", chunks: dateChunks },
+    { key: "cardiovascularAge", endpoint: "daily_cardiovascular_age", chunks: dateChunks },
+    { key: "workouts", endpoint: "workout", chunks: dateChunks },
+    { key: "sessions", endpoint: "session", chunks: dateChunks },
+    { key: "vo2Max", endpoint: "vo2_max", chunks: dateChunks },
+    { key: "sleepTime", endpoint: "sleep_time", chunks: dateChunks },
+    { key: "tags", endpoint: "tag", chunks: dateChunks },
   ];
 
   const results: Record<string, unknown[]> = {};
 
   const settled = await Promise.allSettled(
-    endpoints.map(async ({ key, endpoint, params }) => {
-      const data = await fetchOuraData(endpoint, token, params);
-      return { key, data: data.data || [] };
+    endpoints.map(async ({ key, endpoint, chunks }) => {
+      const data = await fetchChunked(endpoint, token, chunks);
+      return { key, data };
     })
   );
 

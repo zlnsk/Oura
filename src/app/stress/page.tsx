@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { DashboardShell } from "@/components/layout/DashboardShell";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -9,8 +9,8 @@ import { DateNavigator } from "@/components/ui/DateNavigator";
 import { StatCard } from "@/components/ui/StatCard";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { LoadingGrid } from "@/components/ui/LoadingGrid";
-import { ScoreLineChart } from "@/components/charts/ScoreLineChart";
-import { MultiLineChart } from "@/components/charts/MultiLineChart";
+import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineChart } from "@/components/charts";
+import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Brain, Shield, Gauge, Wind, RefreshCw } from "lucide-react";
 import { average } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
@@ -105,58 +105,60 @@ export default function StressPage() {
             <DateRangeSelector />
           </div>
 
-          {/* Stress over time */}
-          {stress.length > 0 && (
-            <MultiLineChart
-              data={stress.map((s) => ({
-                day: s.day,
-                stress: s.stress_high || 0,
-                recovery: s.recovery_high || 0,
-                daytime: s.daytime_recovery || 0,
-              }))}
-              lines={[
-                { key: "stress", color: "#f43f5e", name: "Stress (min)" },
-                { key: "recovery", color: "#10b981", name: "Recovery (min)" },
-                { key: "daytime", color: "#06b6d4", name: "Daytime Recovery (min)" },
-              ]}
-              title="Stress vs Recovery Over Time"
-              unit=" min"
-              height={320}
-            />
-          )}
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* SpO2 */}
-            {spo2.length > 0 && (
-              <ScoreLineChart
-                data={spo2.map((s) => ({
+          <Suspense fallback={<ChartSkeleton height={320} />}>
+            {/* Stress over time */}
+            {stress.length > 0 && (
+              <MultiLineChart
+                data={stress.map((s) => ({
                   day: s.day,
-                  score: s.spo2_percentage?.average || 0,
+                  stress: s.stress_high || 0,
+                  recovery: s.recovery_high || 0,
+                  daytime: s.daytime_recovery || 0,
                 }))}
-                dataKey="score"
-                title="Blood Oxygen (SpO2)"
-                color="#06b6d4"
-                gradientId="spo2Grad"
-                unit="%"
-                domain={[90, 100]}
+                lines={[
+                  { key: "stress", color: "#f43f5e", name: "Stress (min)" },
+                  { key: "recovery", color: "#10b981", name: "Recovery (min)" },
+                  { key: "daytime", color: "#06b6d4", name: "Daytime Recovery (min)" },
+                ]}
+                title="Stress vs Recovery Over Time"
+                unit=" min"
+                height={320}
               />
             )}
 
-            {/* VO2 Max */}
-            {vo2Max.length > 0 && (
-              <ScoreLineChart
-                data={vo2Max.map((v) => ({
-                  day: v.day,
-                  score: v.vo2_max,
-                }))}
-                dataKey="score"
-                title="VO2 Max"
-                color="#10b981"
-                gradientId="vo2Grad"
-                unit=" ml/kg/min"
-              />
-            )}
-          </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* SpO2 */}
+              {spo2.length > 0 && (
+                <ScoreLineChart
+                  data={spo2.map((s) => ({
+                    day: s.day,
+                    score: s.spo2_percentage?.average || 0,
+                  }))}
+                  dataKey="score"
+                  title="Blood Oxygen (SpO2)"
+                  color="#06b6d4"
+                  gradientId="spo2Grad"
+                  unit="%"
+                  domain={[90, 100]}
+                />
+              )}
+
+              {/* VO2 Max */}
+              {vo2Max.length > 0 && (
+                <ScoreLineChart
+                  data={vo2Max.map((v) => ({
+                    day: v.day,
+                    score: v.vo2_max,
+                  }))}
+                  dataKey="score"
+                  title="VO2 Max"
+                  color="#10b981"
+                  gradientId="vo2Grad"
+                  unit=" ml/kg/min"
+                />
+              )}
+            </div>
+          </Suspense>
 
           {/* Resilience */}
           {resilience.length > 0 && (
@@ -192,17 +194,19 @@ export default function StressPage() {
 
           {/* Cardiovascular Age trend */}
           {cardiovascularAge.length > 0 && (
-            <ScoreLineChart
-              data={cardiovascularAge.map((c) => ({
-                day: c.day,
-                score: c.vascular_age,
-              }))}
-              dataKey="score"
-              title="Cardiovascular Age Trend"
-              color="#f43f5e"
-              gradientId="cvAgeGrad"
-              unit=" years"
-            />
+            <Suspense fallback={<ChartSkeleton />}>
+              <ScoreLineChart
+                data={cardiovascularAge.map((c) => ({
+                  day: c.day,
+                  score: c.vascular_age,
+                }))}
+                dataKey="score"
+                title="Cardiovascular Age Trend"
+                color="#f43f5e"
+                gradientId="cvAgeGrad"
+                unit=" years"
+              />
+            </Suspense>
           )}
         </div>
       )}
