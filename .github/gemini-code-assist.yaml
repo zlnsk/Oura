@@ -1,0 +1,3 @@
+reviews:
+  auto_review: true
+  comment_severity: low
