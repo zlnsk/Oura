@@ -87,9 +87,9 @@ export async function fetchWithingsWeight(
   const groups = result.body?.measuregrps || [];
 
   // Convert to our format, sorted by date ascending
-  const entries: WithingsWeightEntry[] = groups
+  const entries = groups
     .filter((g) => g.category === 1) // real measurements only
-    .map((g) => {
+    .map((g): WithingsWeightEntry | null => {
       const date = new Date(g.date * 1000);
       const day = date.toISOString().slice(0, 10);
       const weight = getMeasure(g.measures, MEASURE_TYPES.WEIGHT);
@@ -105,7 +105,7 @@ export async function fetchWithingsWeight(
         bone_mass: getMeasure(g.measures, MEASURE_TYPES.BONE_MASS),
         hydration: getMeasure(g.measures, MEASURE_TYPES.HYDRATION),
         timestamp: date.toISOString(),
-      } satisfies WithingsWeightEntry;
+      };
     })
     .filter((e): e is WithingsWeightEntry => e !== null)
     .sort((a, b) => a.day.localeCompare(b.day));
