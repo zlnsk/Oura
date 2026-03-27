@@ -1,0 +1,103 @@
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import {
+  BASE_PATH,
+  COOKIE_MAX_AGE,
+  WITHINGS_CLIENT_ID,
+  WITHINGS_CLIENT_SECRET,
+  WITHINGS_COOKIE_NAME,
+  WITHINGS_REFRESH_COOKIE_NAME,
+  WITHINGS_TOKEN_URL,
+} from "@/lib/constants";
+
+export async function GET(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session) {
+    return NextResponse.redirect(new URL(BASE_PATH, req.url));
+  }
+
+  const searchParams = req.nextUrl.searchParams;
+  const code = searchParams.get("code");
+  const state = searchParams.get("state");
+  const storedState = req.cookies.get("withings_oauth_state")?.value;
+
+  // Validate CSRF state
+  if (!state || !storedState || state !== storedState) {
+    return redirectToSettings(req, "invalid_state");
+  }
+
+  if (!code) {
+    return redirectToSettings(req, "no_code");
+  }
+
+  // Exchange authorization code for tokens
+  const baseUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}`;
+  const redirectUri = `${baseUrl}/api/withings/callback`;
+
+  try {
+    const params = new URLSearchParams({
+      action: "requesttoken",
+      grant_type: "authorization_code",
+      client_id: WITHINGS_CLIENT_ID,
+      client_secret: WITHINGS_CLIENT_SECRET,
+      code,
+      redirect_uri: redirectUri,
+    });
+
+    const response = await fetch(WITHINGS_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+
+    if (!response.ok) {
+      console.error("Withings token exchange HTTP error:", response.status);
+      return redirectToSettings(req, "token_error");
+    }
+
+    const result = await response.json();
+
+    if (result.status !== 0) {
+      console.error("Withings token exchange API error:", result.status, result.error);
+      return redirectToSettings(req, "token_error");
+    }
+
+    const { access_token, refresh_token } = result.body;
+
+    if (!access_token || !refresh_token) {
+      console.error("Withings token exchange: missing tokens");
+      return redirectToSettings(req, "token_error");
+    }
+
+    // Store tokens in secure cookies
+    const res = redirectToSettings(req, "success");
+    res.cookies.set(WITHINGS_COOKIE_NAME, access_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: COOKIE_MAX_AGE,
+      path: "/",
+    });
+    res.cookies.set(WITHINGS_REFRESH_COOKIE_NAME, refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "strict",
+      maxAge: COOKIE_MAX_AGE,
+      path: "/",
+    });
+    // Clear the state cookie
+    res.cookies.delete("withings_oauth_state");
+
+    return res;
+  } catch (error) {
+    console.error("Withings OAuth callback error:", error instanceof Error ? error.message : "Unknown");
+    return redirectToSettings(req, "token_error");
+  }
+}
+
+function redirectToSettings(req: NextRequest, status: string): NextResponse {
+  const settingsUrl = new URL(`${BASE_PATH}/settings`, req.url);
+  settingsUrl.searchParams.set("withings", status);
+  return NextResponse.redirect(settingsUrl);
+}

@@ -12,6 +12,38 @@ interface AISummary {
   tip: string;
 }
 
+/**
+ * Trim DashboardData to only include fields relevant to each page's AI prompt,
+ * preventing "Request body too large" errors from sending unused bulk data.
+ */
+function trimDataForPage(data: DashboardData, page: PageType): Partial<DashboardData> {
+  switch (page) {
+    case "sleep":
+      return { sleep: data.sleep, sleepPeriods: data.sleepPeriods };
+    case "activity":
+      return { activity: data.activity, workouts: data.workouts };
+    case "readiness":
+      return { readiness: data.readiness, sleepPeriods: data.sleepPeriods };
+    case "heart-rate":
+      return { sleepPeriods: data.sleepPeriods };
+    case "stress":
+      return { stress: data.stress, spo2: data.spo2, cardiovascularAge: data.cardiovascularAge };
+    case "workouts":
+      return { workouts: data.workouts, activity: data.activity };
+    case "weight":
+      return { weight: data.weight, activity: data.activity };
+    default:
+      // Dashboard overview – send scores + recent sleep/activity/readiness/stress
+      return {
+        sleep: data.sleep,
+        activity: data.activity,
+        readiness: data.readiness,
+        stress: data.stress,
+        sleepPeriods: data.sleepPeriods,
+      };
+  }
+}
+
 export function AISummaryCard({ page, data }: { page: PageType; data: DashboardData }) {
   const [summary, setSummary] = useState<AISummary | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,10 +53,11 @@ export function AISummaryCard({ page, data }: { page: PageType; data: DashboardD
     setLoading(true);
     setError(null);
     try {
+      const trimmed = trimDataForPage(data, page);
       const res = await fetch(`${BASE_PATH}/api/ai-summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ data, page }),
+        body: JSON.stringify({ data: trimmed, page }),
       });
       if (!res.ok) {
         const json = await res.json();

@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { COOKIE_MAX_AGE, WITHINGS_COOKIE_NAME } from "@/lib/constants";
+import {
+  COOKIE_MAX_AGE,
+  WITHINGS_CLIENT_ID,
+  WITHINGS_COOKIE_NAME,
+  WITHINGS_REFRESH_COOKIE_NAME,
+} from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
@@ -10,7 +15,8 @@ export async function GET(req: NextRequest) {
   }
 
   const hasToken = !!req.cookies.get(WITHINGS_COOKIE_NAME)?.value;
-  return NextResponse.json({ hasToken });
+  const oauthAvailable = !!WITHINGS_CLIENT_ID;
+  return NextResponse.json({ hasToken, oauthAvailable });
 }
 
 export async function POST(req: NextRequest) {
@@ -55,5 +61,6 @@ export async function DELETE() {
 
   const res = NextResponse.json({ success: true });
   res.cookies.delete(WITHINGS_COOKIE_NAME);
+  res.cookies.delete(WITHINGS_REFRESH_COOKIE_NAME);
   return res;
 }

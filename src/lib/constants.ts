@@ -21,6 +21,13 @@ export const COOKIE_MAX_AGE = 90 * 24 * 60 * 60; // 90 days (seconds)
 export const OURA_COOKIE_NAME = "oura_api_key";
 export const AI_KEY_COOKIE_NAME = "anthropic_api_key";
 export const WITHINGS_COOKIE_NAME = "withings_api_key";
+export const WITHINGS_REFRESH_COOKIE_NAME = "withings_refresh_token";
+
+// Withings OAuth
+export const WITHINGS_CLIENT_ID = process.env.WITHINGS_CLIENT_ID || "";
+export const WITHINGS_CLIENT_SECRET = process.env.WITHINGS_CLIENT_SECRET || "";
+export const WITHINGS_AUTH_URL = "https://account.withings.com/oauth2_user/authorize2";
+export const WITHINGS_TOKEN_URL = "https://wbsapi.withings.net/v2/oauth2";
 
 // Rate limits
 export const AI_DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "20", 10);

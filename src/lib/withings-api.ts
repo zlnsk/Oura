@@ -3,6 +3,11 @@
 // ---------------------------------------------------------------------------
 
 import type { WithingsWeightEntry } from "@/types/oura";
+import {
+  WITHINGS_CLIENT_ID,
+  WITHINGS_CLIENT_SECRET,
+  WITHINGS_TOKEN_URL,
+} from "@/lib/constants";
 
 const WITHINGS_API_URL = "https://wbsapi.withings.net/measure";
 
@@ -48,6 +53,51 @@ function getMeasure(
 ): number | undefined {
   const m = measures.find((m) => m.type === type);
   return m ? realValue(m) : undefined;
+}
+
+// ---------------------------------------------------------------------------
+// Token refresh – returns new access + refresh tokens, or null on failure
+// ---------------------------------------------------------------------------
+
+export interface WithingsTokens {
+  access_token: string;
+  refresh_token: string;
+}
+
+export async function refreshWithingsToken(
+  refreshToken: string
+): Promise<WithingsTokens | null> {
+  if (!WITHINGS_CLIENT_ID || !WITHINGS_CLIENT_SECRET) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    action: "requesttoken",
+    grant_type: "refresh_token",
+    client_id: WITHINGS_CLIENT_ID,
+    client_secret: WITHINGS_CLIENT_SECRET,
+    refresh_token: refreshToken,
+  });
+
+  try {
+    const response = await fetch(WITHINGS_TOKEN_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+
+    if (!response.ok) return null;
+
+    const result = await response.json();
+    if (result.status !== 0) return null;
+
+    return {
+      access_token: result.body.access_token,
+      refresh_token: result.body.refresh_token,
+    };
+  } catch {
+    return null;
+  }
 }
 
 export async function fetchWithingsWeight(
