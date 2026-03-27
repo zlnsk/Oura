@@ -3,7 +3,7 @@
 // ---------------------------------------------------------------------------
 
 // Base path — must match next.config.js basePath
-export const BASE_PATH = "/oura";
+export const BASE_PATH = "/Oura";
 
 // API & Data
 export const OURA_BASE_URL = "https://api.ouraring.com/v2/usercollection";
