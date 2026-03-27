@@ -69,7 +69,7 @@ export const COLORS = {
   calories: "#f97316", // orange-500
   spo2: "#06b6d4", // cyan-500
   weight: "#14b8a6", // teal-500
-  brand: "#0c93e9", // oura blue
+  brand: "#1a73e8", // google blue
 
   // Sleep stages
   deep: "#6366f1",
