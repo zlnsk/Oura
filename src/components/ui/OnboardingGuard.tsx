@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
-import { Key, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
+import { Key, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { BASE_PATH } from "@/lib/constants";
 

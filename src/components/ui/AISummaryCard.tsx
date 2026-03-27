@@ -4,8 +4,8 @@ import { useState } from "react";
 import { Sparkles, RefreshCw, Zap } from "lucide-react";
 import type { DashboardData } from "@/types/oura";
 import { BASE_PATH } from "@/lib/constants";
-
-export type PageType = "dashboard" | "sleep" | "activity" | "readiness" | "heart-rate" | "stress" | "workouts" | "weight";
+import type { PageType } from "@/lib/constants";
+export type { PageType };
 
 interface AISummary {
   overall: string;
