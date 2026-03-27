@@ -17,9 +17,11 @@ import {
   Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/components/ui/Toast";
 
 export default function SettingsPage() {
   const { fetchData } = useOuraData();
+  const { toast } = useToast();
 
   // Oura API key state
   const [apiKey, setApiKey] = useState("");
@@ -70,6 +72,7 @@ export default function SettingsPage() {
       if (res.ok) {
         setHasKey(true);
         setSaved(true);
+        toast("API key saved securely", "success");
         setTimeout(() => setSaved(false), 3000);
       } else {
         const data = await res.json();
@@ -83,6 +86,7 @@ export default function SettingsPage() {
   };
 
   const handleDelete = async () => {
+    if (!confirm("Remove your Oura API key? You'll need to re-enter it to use the dashboard.")) return;
     try {
       await fetch("/api/settings/token", { method: "DELETE" });
     } catch {}
@@ -90,6 +94,7 @@ export default function SettingsPage() {
     setHasKey(false);
     setSaved(false);
     setTestStatus("idle");
+    toast("Oura API key removed", "info");
   };
 
   const handleTest = async () => {
@@ -121,6 +126,7 @@ export default function SettingsPage() {
       if (res.ok) {
         setTestStatus("success");
         setTestMessage("Connection successful! Your Oura data is accessible.");
+        toast("Connected to Oura successfully", "success");
         fetchData();
       } else {
         const json = await res.json();
@@ -170,6 +176,7 @@ export default function SettingsPage() {
   };
 
   const handleDeleteAiKey = async () => {
+    if (!confirm("Remove your Anthropic API key?")) return;
     try {
       await fetch("/api/settings/ai-key", { method: "DELETE" });
     } catch {}
@@ -177,6 +184,7 @@ export default function SettingsPage() {
     setHasAiKey(false);
     setAiSaved(false);
     setAiStatus("idle");
+    toast("AI API key removed", "info");
   };
 
   return (

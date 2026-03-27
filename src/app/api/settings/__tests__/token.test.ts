@@ -107,21 +107,21 @@ describe("Settings Token API - Cookie Configuration", () => {
       httpOnly: true,
       secure: true,
       sameSite: "strict" as const,
-      maxAge: 365 * 24 * 60 * 60,
+      maxAge: 90 * 24 * 60 * 60,
       path: "/",
     };
 
     expect(cookieOptions.httpOnly).toBe(true);
     expect(cookieOptions.secure).toBe(true);
     expect(cookieOptions.sameSite).toBe("strict");
-    expect(cookieOptions.maxAge).toBe(31536000); // 1 year in seconds
+    expect(cookieOptions.maxAge).toBe(7776000); // 90 days in seconds
     expect(cookieOptions.path).toBe("/");
   });
 
-  it("cookie maxAge is approximately 1 year", () => {
-    const maxAge = 365 * 24 * 60 * 60;
-    const oneYearInSeconds = 365 * 24 * 3600;
-    expect(maxAge).toBe(oneYearInSeconds);
+  it("cookie maxAge is 90 days", () => {
+    const maxAge = 90 * 24 * 60 * 60;
+    const ninetyDaysInSeconds = 90 * 24 * 3600;
+    expect(maxAge).toBe(ninetyDaysInSeconds);
   });
 });
 

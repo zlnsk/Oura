@@ -20,6 +20,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, formatDuration } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 import type { Workout } from "@/types/oura";
 
@@ -85,7 +86,7 @@ export default function WorkoutsPage() {
         title="Workouts & Sessions"
         subtitle="Exercise tracking and tags"
         icon={Dumbbell}
-        iconColor="#f43f5e"
+        iconColor={COLORS.heartRate}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -113,27 +114,27 @@ export default function WorkoutsPage() {
               label="Workouts Today"
               value={dayWorkouts.length}
               icon={Dumbbell}
-              color="#f43f5e"
+              color={COLORS.heartRate}
             />
             <StatCard
               label="Calories Burned"
               value={Math.round(dayCalories).toLocaleString()}
               unit="cal"
               icon={Flame}
-              color="#f59e0b"
+              color={COLORS.good}
             />
             <StatCard
               label="Total Duration"
               value={dayWorkouts.length > 0 ? formatDuration(dayTotalDuration) : "\u2014"}
               icon={Clock}
-              color="#06b6d4"
+              color={COLORS.spo2}
             />
             <StatCard
               label="Distance"
               value={dayWorkouts.length > 0 ? (dayDistance / 1000).toFixed(1) : "\u2014"}
               unit={dayWorkouts.length > 0 ? "km" : ""}
               icon={MapPin}
-              color="#10b981"
+              color={COLORS.steps}
             />
           </div>
 
@@ -272,27 +273,27 @@ export default function WorkoutsPage() {
               label="Period Workouts"
               value={allWorkouts.length}
               icon={Dumbbell}
-              color="#f43f5e"
+              color={COLORS.heartRate}
             />
             <StatCard
               label="Period Calories"
               value={Math.round(periodCalories).toLocaleString()}
               unit="cal"
               icon={Flame}
-              color="#f59e0b"
+              color={COLORS.good}
             />
             <StatCard
               label="Avg Duration"
               value={allWorkouts.length > 0 ? formatDuration(periodAvgDuration) : "\u2014"}
               icon={Clock}
-              color="#06b6d4"
+              color={COLORS.spo2}
             />
             <StatCard
               label="Total Distance"
               value={allWorkouts.length > 0 ? (allWorkouts.reduce((s, w) => s + (w.distance || 0), 0) / 1000).toFixed(1) : "\u2014"}
               unit={allWorkouts.length > 0 ? "km" : ""}
               icon={MapPin}
-              color="#10b981"
+              color={COLORS.steps}
             />
           </div>
 
@@ -303,7 +304,7 @@ export default function WorkoutsPage() {
                 data={caloriesByDay}
                 dataKey="calories"
                 title="Workout Calories"
-                color="#f59e0b"
+                color={COLORS.good}
                 unit=" cal"
               />
             </Suspense>

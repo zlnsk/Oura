@@ -14,6 +14,7 @@ import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineCh
 import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Zap, Thermometer, RefreshCw } from "lucide-react";
 import { average, trend } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
@@ -38,7 +39,7 @@ export default function ReadinessPage() {
         title="Readiness"
         subtitle="Recovery and readiness metrics"
         icon={Zap}
-        iconColor="#f59e0b"
+        iconColor={COLORS.readiness}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -96,7 +97,7 @@ export default function ReadinessPage() {
               label="Avg Readiness"
               value={average(readiness.map((r) => r.score))}
               icon={Zap}
-              color="#f59e0b"
+              color={COLORS.readiness}
               trend={trend(readiness.map((r) => r.score))}
               trendPositive={trend(readiness.map((r) => r.score)) === "up"}
             />
@@ -104,13 +105,13 @@ export default function ReadinessPage() {
               label="Best Score"
               value={Math.max(...readiness.map((r) => r.score), 0)}
               icon={Zap}
-              color="#10b981"
+              color={COLORS.optimal}
             />
             <StatCard
               label="Lowest Score"
               value={readiness.length ? Math.min(...readiness.map((r) => r.score)) : "--"}
               icon={Zap}
-              color="#f43f5e"
+              color={COLORS.attention}
             />
             <StatCard
               label="Avg Temp Dev"
@@ -119,7 +120,7 @@ export default function ReadinessPage() {
               }
               unit="°C"
               icon={Thermometer}
-              color="#06b6d4"
+              color={COLORS.spo2}
             />
           </div>
 
@@ -132,7 +133,7 @@ export default function ReadinessPage() {
             <ScoreLineChart
               data={readiness}
               title="Readiness Score Trend"
-              color="#f59e0b"
+              color={COLORS.readiness}
               gradientId="readScoreGrad"
               domain={[40, 100]}
             />
@@ -145,8 +146,8 @@ export default function ReadinessPage() {
                 trend: Number((r.temperature_trend_deviation || 0).toFixed(2)),
               }))}
               lines={[
-                { key: "deviation", color: "#f43f5e", name: "Temp Deviation" },
-                { key: "trend", color: "#06b6d4", name: "Temp Trend" },
+                { key: "deviation", color: COLORS.heartRate, name: "Temp Deviation" },
+                { key: "trend", color: COLORS.spo2, name: "Temp Trend" },
               ]}
               title="Body Temperature Deviation"
               unit="°C"

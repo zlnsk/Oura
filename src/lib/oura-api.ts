@@ -1,5 +1,6 @@
-const OURA_BASE_URL = "https://api.ouraring.com/v2/usercollection";
-const CHUNK_SIZE_DAYS = 90;
+import { OURA_BASE_URL, CHUNK_SIZE_DAYS } from "@/lib/constants";
+
+const MAX_CONCURRENT_CHUNKS = 3;
 
 export async function fetchOuraData(
   endpoint: string,
@@ -17,8 +18,8 @@ export async function fetchOuraData(
   });
 
   if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Oura API error (${res.status}): ${text}`);
+    const status = res.status;
+    throw new Error(`Oura API error (${status})`);
   }
 
   return res.json();
@@ -26,7 +27,7 @@ export async function fetchOuraData(
 
 export async function fetchPersonalInfo(token: string) {
   const res = await fetch(
-    "https://api.ouraring.com/v2/usercollection/personal_info",
+    `${OURA_BASE_URL}/personal_info`,
     {
       headers: { Authorization: `Bearer ${token}` },
       cache: "no-store",
@@ -90,7 +91,9 @@ function chunkDateRange(days: number): DateChunk[] {
     const chunkEnd = new Date(now);
     chunkEnd.setDate(chunkEnd.getDate() - (days - remaining) + 1); // exclusive
     const chunkStart = new Date(now);
-    chunkStart.setDate(chunkStart.getDate() - (days - remaining + chunkDays));
+    chunkStart.setDate(
+      chunkStart.getDate() - (days - remaining + chunkDays)
+    );
 
     chunks.push({
       start_date: toLocalDateStr(chunkStart),
@@ -115,7 +118,9 @@ function chunkDateTimeRange(days: number): DateTimeChunk[] {
     const chunkEnd = new Date(now);
     chunkEnd.setDate(chunkEnd.getDate() - (days - remaining));
     const chunkStart = new Date(now);
-    chunkStart.setDate(chunkStart.getDate() - (days - remaining + chunkDays));
+    chunkStart.setDate(
+      chunkStart.getDate() - (days - remaining + chunkDays)
+    );
 
     chunks.push({
       start_datetime: chunkStart.toISOString(),
@@ -128,7 +133,7 @@ function chunkDateTimeRange(days: number): DateTimeChunk[] {
   return chunks;
 }
 
-/** Fetch a single endpoint across all date chunks and merge results. */
+/** Fetch a single endpoint across all date chunks with controlled concurrency. */
 async function fetchChunked(
   endpoint: string,
   token: string,
@@ -136,10 +141,21 @@ async function fetchChunked(
 ): Promise<unknown[]> {
   const results: unknown[] = [];
 
-  // Sequential to respect rate limits
-  for (const chunk of chunks) {
-    const data = await fetchOuraData(endpoint, token, chunk as unknown as Record<string, string>);
-    if (data.data) results.push(...data.data);
+  // Process chunks with limited concurrency to balance speed and rate limits
+  for (let i = 0; i < chunks.length; i += MAX_CONCURRENT_CHUNKS) {
+    const batch = chunks.slice(i, i + MAX_CONCURRENT_CHUNKS);
+    const batchResults = await Promise.all(
+      batch.map((chunk) =>
+        fetchOuraData(
+          endpoint,
+          token,
+          chunk as unknown as Record<string, string>
+        )
+      )
+    );
+    for (const data of batchResults) {
+      if (data.data) results.push(...data.data);
+    }
   }
 
   return results;
@@ -158,7 +174,11 @@ export async function fetchAllOuraData(token: string, days: number = 30) {
     { key: "stress", endpoint: "daily_stress", chunks: dateChunks },
     { key: "spo2", endpoint: "daily_spo2", chunks: dateChunks },
     { key: "resilience", endpoint: "daily_resilience", chunks: dateChunks },
-    { key: "cardiovascularAge", endpoint: "daily_cardiovascular_age", chunks: dateChunks },
+    {
+      key: "cardiovascularAge",
+      endpoint: "daily_cardiovascular_age",
+      chunks: dateChunks,
+    },
     { key: "workouts", endpoint: "workout", chunks: dateChunks },
     { key: "sessions", endpoint: "session", chunks: dateChunks },
     { key: "vo2Max", endpoint: "vo2_max", chunks: dateChunks },
@@ -175,12 +195,12 @@ export async function fetchAllOuraData(token: string, days: number = 30) {
     })
   );
 
-  for (const result of settled) {
+  for (let i = 0; i < settled.length; i++) {
+    const result = settled[i];
     if (result.status === "fulfilled") {
       results[result.value.key] = result.value.data;
     } else {
-      const idx = settled.indexOf(result);
-      results[endpoints[idx].key] = [];
+      results[endpoints[i].key] = [];
     }
   }
 
@@ -188,7 +208,7 @@ export async function fetchAllOuraData(token: string, days: number = 30) {
   try {
     personalInfo = await fetchPersonalInfo(token);
   } catch {
-    // ignore
+    // personal info is optional
   }
 
   return { ...results, personalInfo };

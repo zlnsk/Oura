@@ -2,9 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import type { DashboardData } from "@/types/oura";
-
-const CACHE_KEY = "oura_data_cache";
-const STALE_MS = 15 * 60 * 1000; // 15 minutes
+import { CACHE_KEY, STALE_MS } from "@/lib/constants";
 
 interface CacheEntry {
   data: DashboardData;
@@ -110,6 +108,9 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     }
   }, [days]);
 
+  const dataRef = useRef(data);
+  dataRef.current = data;
+
   const fetchData = useCallback(async () => {
     // If offline, serve from cache and mark stale
     if (!navigator.onLine) {
@@ -142,7 +143,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
       setError(message);
 
       // Stale-while-revalidate: fall back to cache on fetch failure
-      if (!data) {
+      if (!dataRef.current) {
         const entry = readCacheEntry();
         if (entry) {
           setData({ ...defaultData, ...entry.data });
@@ -155,7 +156,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false);
     }
-  }, [days, data]);
+  }, [days]);
 
   // Re-fetch when days changes
   const prevDaysRef = useRef(days);

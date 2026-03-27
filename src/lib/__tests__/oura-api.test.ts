@@ -115,7 +115,7 @@ describe("fetchOuraData", () => {
     });
 
     await expect(fetchOuraData("daily_sleep", "bad-token")).rejects.toThrow(
-      "Oura API error (401): Unauthorized"
+      "Oura API error (401)"
     );
   });
 

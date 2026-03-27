@@ -113,7 +113,7 @@ describe("Settings AI Key API - Cookie Configuration", () => {
       httpOnly: true,
       secure: true,
       sameSite: "strict" as const,
-      maxAge: 365 * 24 * 60 * 60,
+      maxAge: 90 * 24 * 60 * 60,
       path: "/",
     };
 

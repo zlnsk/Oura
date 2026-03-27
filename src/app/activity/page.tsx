@@ -21,6 +21,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
@@ -107,7 +108,7 @@ export default function ActivityPage() {
         title="Activity"
         subtitle="Movement, steps, and calorie tracking"
         icon={Activity}
-        iconColor="#10b981"
+        iconColor={COLORS.activity}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -194,7 +195,7 @@ export default function ActivityPage() {
               label="Avg Daily Steps"
               value={avgSteps.toLocaleString()}
               icon={Footprints}
-              color="#10b981"
+              color={COLORS.steps}
               trend={trend(activities.map((a) => a.steps))}
               trendPositive={trend(activities.map((a) => a.steps)) === "up"}
             />
@@ -203,7 +204,7 @@ export default function ActivityPage() {
               value={avgCalories.toLocaleString()}
               unit="cal"
               icon={Flame}
-              color="#f59e0b"
+              color={COLORS.activity}
             />
             <StatCard
               label="Avg Active Time"
@@ -216,13 +217,13 @@ export default function ActivityPage() {
                 )
               )}
               icon={Timer}
-              color="#06b6d4"
+              color={COLORS.spo2}
             />
             <StatCard
               label="Inactivity Alerts"
               value={selected?.inactivity_alerts || 0}
               icon={Target}
-              color="#f43f5e"
+              color={COLORS.attention}
             />
           </div>
 
@@ -231,7 +232,7 @@ export default function ActivityPage() {
             <ScoreLineChart
               data={activities}
               title="Activity Score Trend"
-              color="#10b981"
+              color={COLORS.activity}
               gradientId="actScoreGrad"
               domain={[40, 100]}
             />
@@ -241,7 +242,7 @@ export default function ActivityPage() {
                 data={activities.map((a) => ({ day: a.day, steps: a.steps }))}
                 dataKey="steps"
                 title="Daily Steps"
-                color="#10b981"
+                color={COLORS.steps}
               />
               <BarChartComponent
                 data={activities.map((a) => ({
@@ -250,7 +251,7 @@ export default function ActivityPage() {
                 }))}
                 dataKey="calories"
                 title="Daily Calories"
-                color="#f59e0b"
+                color={COLORS.activity}
                 unit=" cal"
               />
             </div>
@@ -263,9 +264,9 @@ export default function ActivityPage() {
                 low: Math.round((a.low_activity_time || 0) / 60),
               }))}
               lines={[
-                { key: "high", color: "#f43f5e", name: "High (min)" },
-                { key: "medium", color: "#f59e0b", name: "Medium (min)" },
-                { key: "low", color: "#06b6d4", name: "Low (min)" },
+                { key: "high", color: COLORS.attention, name: "High (min)" },
+                { key: "medium", color: COLORS.good, name: "Medium (min)" },
+                { key: "low", color: COLORS.spo2, name: "Low (min)" },
               ]}
               title="Activity Levels Over Time"
               unit=" min"

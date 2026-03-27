@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "@/components/layout/ThemeProvider";
@@ -19,8 +20,10 @@ import {
   Sparkles,
   ChevronLeft,
   ChevronRight,
+  Menu,
+  X,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -38,17 +41,38 @@ export function Sidebar() {
   const { data: session } = useSession();
   const { theme, toggleTheme } = useTheme();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside
-      className={cn(
-        "fixed left-0 top-0 h-screen z-40 flex flex-col",
-        "bg-white/90 dark:bg-[#0d0d14]/90 backdrop-blur-2xl",
-        "border-r border-slate-200/50 dark:border-slate-800/30",
-        "transition-all duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
-        collapsed ? "w-[72px]" : "w-64"
-      )}
-    >
+  // Close mobile sidebar on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Close mobile sidebar on escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false);
+    };
+    if (mobileOpen) {
+      document.addEventListener("keydown", handleEscape);
+      return () => document.removeEventListener("keydown", handleEscape);
+    }
+  }, [mobileOpen]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [mobileOpen]);
+
+  const handleSignOut = useCallback(() => {
+    signOut({ callbackUrl: "/" });
+  }, []);
+
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-200/50 dark:border-slate-800/30">
         <div className="w-9 h-9 rounded-xl bg-oura-50 dark:bg-oura-500/10 flex items-center justify-center flex-shrink-0">
@@ -62,10 +86,22 @@ export function Sidebar() {
             </p>
           </div>
         )}
+        {/* Mobile close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="ml-auto p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors lg:hidden"
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto" role="navigation" aria-label="Main navigation">
+      <nav
+        className="flex-1 px-3 py-4 space-y-1 overflow-y-auto"
+        role="navigation"
+        aria-label="Main navigation"
+      >
         {navItems.map(({ href, icon: Icon, label }) => (
           <Link
             key={href}
@@ -73,7 +109,7 @@ export function Sidebar() {
             className={cn(
               "nav-link",
               pathname === href && "active",
-              collapsed && "justify-center px-0"
+              collapsed && "justify-center px-0 lg:justify-center lg:px-0"
             )}
             title={collapsed ? label : undefined}
             aria-current={pathname === href ? "page" : undefined}
@@ -89,7 +125,7 @@ export function Sidebar() {
             className={cn(
               "nav-link",
               pathname === "/settings" && "active",
-              collapsed && "justify-center px-0"
+              collapsed && "justify-center px-0 lg:justify-center lg:px-0"
             )}
             title={collapsed ? "Settings" : undefined}
             aria-current={pathname === "/settings" ? "page" : undefined}
@@ -109,8 +145,12 @@ export function Sidebar() {
             "nav-link w-full",
             collapsed && "justify-center px-0"
           )}
-          title={collapsed ? `Switch to ${theme === "dark" ? "light" : "dark"} mode` : undefined}
-          aria-label="Toggle theme"
+          title={
+            collapsed
+              ? `Switch to ${theme === "dark" ? "light" : "dark"} mode`
+              : undefined
+          }
+          aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
         >
           {theme === "dark" ? (
             <Sun className="w-5 h-5 flex-shrink-0 text-amber-400" />
@@ -128,15 +168,22 @@ export function Sidebar() {
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl",
               "bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/50 dark:border-slate-800/30",
-              collapsed && "justify-center px-0 border-0 bg-transparent dark:bg-transparent"
+              collapsed &&
+                "justify-center px-0 border-0 bg-transparent dark:bg-transparent"
             )}
           >
-            {session.user.image && (
-              <img
+            {session.user.image ? (
+              <Image
                 src={session.user.image}
-                alt=""
-                className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 flex-shrink-0"
+                alt={session.user.name || "User avatar"}
+                width={32}
+                height={32}
+                className="rounded-full ring-2 ring-white dark:ring-slate-800 flex-shrink-0"
               />
+            ) : (
+              <div className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 flex-shrink-0 bg-oura-100 dark:bg-oura-900 flex items-center justify-center text-xs font-bold text-oura-600 dark:text-oura-400">
+                {(session.user.name || "U")[0].toUpperCase()}
+              </div>
             )}
             {!collapsed && (
               <div className="flex-1 min-w-0">
@@ -152,7 +199,7 @@ export function Sidebar() {
         )}
 
         <button
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={handleSignOut}
           className={cn(
             "nav-link w-full text-rose-500 dark:text-rose-400 hover:bg-rose-50/70 dark:hover:bg-rose-950/20",
             collapsed && "justify-center px-0"
@@ -164,11 +211,11 @@ export function Sidebar() {
           {!collapsed && <span>Sign Out</span>}
         </button>
 
-        {/* Collapse toggle */}
+        {/* Collapse toggle (desktop only) */}
         <button
           onClick={() => setCollapsed(!collapsed)}
-          className="nav-link w-full justify-center"
-          aria-label="Toggle sidebar"
+          className="nav-link w-full justify-center hidden lg:flex"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {collapsed ? (
             <ChevronRight className="w-5 h-5" />
@@ -177,6 +224,45 @@ export function Sidebar() {
           )}
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-white/90 dark:bg-[#1c1c24]/90 backdrop-blur-lg border border-black/[0.04] dark:border-white/[0.06] shadow-card lg:hidden"
+        aria-label="Open navigation menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          onClick={() => setMobileOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={cn(
+          "fixed left-0 top-0 h-screen z-50 flex flex-col",
+          "bg-white/90 dark:bg-[#0d0d14]/90 backdrop-blur-2xl",
+          "border-r border-slate-200/50 dark:border-slate-800/30",
+          "transition-all duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
+          // Mobile: slide in/out
+          "max-lg:-translate-x-full max-lg:w-64",
+          mobileOpen && "max-lg:translate-x-0",
+          // Desktop: collapse
+          collapsed ? "lg:w-[72px]" : "lg:w-64"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

@@ -13,6 +13,7 @@ import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineCh
 import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Brain, Shield, Gauge, Wind, RefreshCw } from "lucide-react";
 import { average } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
@@ -42,7 +43,7 @@ export default function StressPage() {
         title="Stress & Resilience"
         subtitle="Stress levels, SpO2, and cardiovascular metrics"
         icon={Brain}
-        iconColor="#8b5cf6"
+        iconColor={COLORS.hrv}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -70,14 +71,14 @@ export default function StressPage() {
               label="Stress Level"
               value={latest?.day_summary || "--"}
               icon={Brain}
-              color="#8b5cf6"
+              color={COLORS.hrv}
             />
             <StatCard
               label="Avg Recovery"
               value={average(stress.map((s) => s.recovery_high || 0))}
               unit="min"
               icon={Shield}
-              color="#10b981"
+              color={COLORS.optimal}
             />
             <StatCard
               label="Avg SpO2"
@@ -88,7 +89,7 @@ export default function StressPage() {
               }
               unit="%"
               icon={Wind}
-              color="#06b6d4"
+              color={COLORS.spo2}
             />
             <StatCard
               label="Cardiovascular Age"
@@ -99,7 +100,7 @@ export default function StressPage() {
               }
               unit="yrs"
               icon={Gauge}
-              color="#f43f5e"
+              color={COLORS.heartRate}
             />
           </div>
 
@@ -120,9 +121,9 @@ export default function StressPage() {
                   daytime: s.daytime_recovery || 0,
                 }))}
                 lines={[
-                  { key: "stress", color: "#f43f5e", name: "Stress (min)" },
-                  { key: "recovery", color: "#10b981", name: "Recovery (min)" },
-                  { key: "daytime", color: "#06b6d4", name: "Daytime Recovery (min)" },
+                  { key: "stress", color: COLORS.attention, name: "Stress (min)" },
+                  { key: "recovery", color: COLORS.optimal, name: "Recovery (min)" },
+                  { key: "daytime", color: COLORS.spo2, name: "Daytime Recovery (min)" },
                 ]}
                 title="Stress vs Recovery Over Time"
                 unit=" min"
@@ -140,7 +141,7 @@ export default function StressPage() {
                   }))}
                   dataKey="score"
                   title="Blood Oxygen (SpO2)"
-                  color="#06b6d4"
+                  color={COLORS.spo2}
                   gradientId="spo2Grad"
                   unit="%"
                   domain={[90, 100]}
@@ -156,7 +157,7 @@ export default function StressPage() {
                   }))}
                   dataKey="score"
                   title="VO2 Max"
-                  color="#10b981"
+                  color={COLORS.optimal}
                   gradientId="vo2Grad"
                   unit=" ml/kg/min"
                 />
@@ -206,7 +207,7 @@ export default function StressPage() {
                 }))}
                 dataKey="score"
                 title="Cardiovascular Age Trend"
-                color="#f43f5e"
+                color={COLORS.heartRate}
                 gradientId="cvAgeGrad"
                 unit=" years"
               />

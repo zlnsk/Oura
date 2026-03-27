@@ -13,6 +13,7 @@ import { LazyScoreLineChart as ScoreLineChart, LazyMultiLineChart as MultiLineCh
 import { ChartSkeleton } from "@/components/ui/ChartSkeleton";
 import { Heart, TrendingDown, Activity, Wind, RefreshCw } from "lucide-react";
 import { trend } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 
 function getToday(): string {
@@ -77,7 +78,7 @@ export default function HeartRatePage() {
         title="Heart Rate"
         subtitle="Heart rate and HRV analysis"
         icon={Heart}
-        iconColor="#f43f5e"
+        iconColor={COLORS.heartRate}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -105,7 +106,7 @@ export default function HeartRatePage() {
               value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.average_heart_rate) : "--"}
               unit="bpm"
               icon={Heart}
-              color="#f43f5e"
+              color={COLORS.heartRate}
               trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_heart_rate))}
               trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_heart_rate)) === "down"}
             />
@@ -114,7 +115,7 @@ export default function HeartRatePage() {
               value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.lowest_heart_rate) : "--"}
               unit="bpm"
               icon={TrendingDown}
-              color="#06b6d4"
+              color={COLORS.spo2}
               trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.lowest_heart_rate))}
               trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.lowest_heart_rate)) === "down"}
             />
@@ -123,14 +124,14 @@ export default function HeartRatePage() {
               value={selectedDayHR?.avg || "--"}
               unit="bpm"
               icon={Activity}
-              color="#f59e0b"
+              color={COLORS.good}
             />
             <StatCard
               label="HRV"
               value={selectedSleepPeriod ? Math.round(selectedSleepPeriod.average_hrv) : "--"}
               unit="ms"
               icon={Wind}
-              color="#8b5cf6"
+              color={COLORS.hrv}
               trend={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_hrv))}
               trendPositive={trend(sleepPeriods.filter(s => s.type === "long_sleep").map((s) => s.average_hrv)) === "up"}
             />
@@ -147,9 +148,9 @@ export default function HeartRatePage() {
             <MultiLineChart
               data={dailyHR}
               lines={[
-                { key: "max", color: "#f43f5e", name: "Max HR" },
-                { key: "avg", color: "#f59e0b", name: "Avg HR" },
-                { key: "min", color: "#06b6d4", name: "Min HR" },
+                { key: "max", color: COLORS.heartRate, name: "Max HR" },
+                { key: "avg", color: COLORS.good, name: "Avg HR" },
+                { key: "min", color: COLORS.spo2, name: "Min HR" },
               ]}
               title="Daily Heart Rate Range"
               unit=" bpm"
@@ -165,8 +166,8 @@ export default function HeartRatePage() {
                   lowest: s.lowest_heart_rate,
                 }))}
                 lines={[
-                  { key: "avg", color: "#f43f5e", name: "Avg HR" },
-                  { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
+                  { key: "avg", color: COLORS.heartRate, name: "Avg HR" },
+                  { key: "lowest", color: COLORS.spo2, name: "Lowest HR" },
                 ]}
                 title="Heart Rate During Sleep"
                 unit=" bpm"
@@ -180,7 +181,7 @@ export default function HeartRatePage() {
                 }))}
                 dataKey="score"
                 title="HRV Trend"
-                color="#8b5cf6"
+                color={COLORS.hrv}
                 gradientId="hrvTrendGrad"
                 unit=" ms"
               />
@@ -191,7 +192,7 @@ export default function HeartRatePage() {
               data={hrDistribution}
               dataKey="count"
               title="Heart Rate Distribution"
-              color="#f43f5e"
+              color={COLORS.heartRate}
               unit=" readings"
             />
           </Suspense>

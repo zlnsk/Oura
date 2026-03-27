@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
+import { COLORS } from "@/lib/constants";
 import type { SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
 
 function getDateStr(date: Date): string {
@@ -76,11 +77,7 @@ function SleepStageBar({
 }
 
 function ContributorBar({ label, value }: { label: string; value: number }) {
-  const getBarColor = (v: number) => {
-    if (v >= 85) return "#10b981";
-    if (v >= 70) return "#f59e0b";
-    return "#f43f5e";
-  };
+  const barColor = value >= 85 ? COLORS.optimal : value >= 70 ? COLORS.good : COLORS.attention;
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between text-xs">
@@ -90,7 +87,7 @@ function ContributorBar({ label, value }: { label: string; value: number }) {
       <div className="h-1 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{ width: `${value}%`, backgroundColor: getBarColor(value) }}
+          style={{ width: `${value}%`, backgroundColor: barColor }}
         />
       </div>
     </div>
@@ -235,10 +232,10 @@ function TodayProgress({
 
             {/* Sleep stages */}
             <div className="space-y-2.5">
-              <SleepStageBar label="Deep" minutes={deepMin} totalMinutes={totalMin} color="#6366f1" />
-              <SleepStageBar label="REM" minutes={remMin} totalMinutes={totalMin} color="#8b5cf6" />
-              <SleepStageBar label="Light" minutes={lightMin} totalMinutes={totalMin} color="#a78bfa" />
-              <SleepStageBar label="Awake" minutes={awakeMin} totalMinutes={totalMin} color="#f43f5e" />
+              <SleepStageBar label="Deep" minutes={deepMin} totalMinutes={totalMin} color={COLORS.deep} />
+              <SleepStageBar label="REM" minutes={remMin} totalMinutes={totalMin} color={COLORS.rem} />
+              <SleepStageBar label="Light" minutes={lightMin} totalMinutes={totalMin} color={COLORS.light} />
+              <SleepStageBar label="Awake" minutes={awakeMin} totalMinutes={totalMin} color={COLORS.awake} />
             </div>
 
             {/* Sleep vitals */}
@@ -376,24 +373,18 @@ export default function DashboardPage() {
     return getDateStr(d);
   }, [selectedDate]);
 
-  // Sleep/readiness: strictly selected date only (no fallback to avoid showing stale data)
-  const todaySleep = useMemo(
-    () => data?.sleep?.find((s) => s.day === selectedDate),
-    [data, selectedDate]
-  );
-  const todaySleepPeriod = useMemo(
-    () => data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep"),
-    [data, selectedDate]
-  );
-  const todayReadiness = useMemo(
-    () => data?.readiness?.find((r) => r.day === selectedDate),
-    [data, selectedDate]
-  );
-  // Activity: strictly selected date only
-  const todayActivity = useMemo(
-    () => data?.activity?.find((a) => a.day === selectedDate),
-    [data, selectedDate]
-  );
+  // Consolidate today's metrics into a single useMemo to reduce hook overhead
+  const todayMetrics = useMemo(() => ({
+    sleep: data?.sleep?.find((s) => s.day === selectedDate),
+    sleepPeriod: data?.sleepPeriods?.find((s) => s.day === selectedDate && s.type === "long_sleep"),
+    readiness: data?.readiness?.find((r) => r.day === selectedDate),
+    activity: data?.activity?.find((a) => a.day === selectedDate),
+  }), [data, selectedDate]);
+
+  const todaySleep = todayMetrics.sleep;
+  const todaySleepPeriod = todayMetrics.sleepPeriod;
+  const todayReadiness = todayMetrics.readiness;
+  const todayActivity = todayMetrics.activity;
 
   // Find wake-up time from sleep period
   const wakeTime = useMemo(() => {
@@ -464,7 +455,7 @@ export default function DashboardPage() {
         title="Daily View"
         subtitle={new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         icon={LayoutDashboard}
-        iconColor="#0c93e9"
+        iconColor={COLORS.brand}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -518,7 +509,7 @@ export default function DashboardPage() {
               label="Avg Sleep Score"
               value={average(sleepScores)}
               icon={BedDouble}
-              color="#6366f1"
+              color={COLORS.sleep}
               trend={trend(data.sleep.map((s) => s.score))}
               trendLabel={`Latest ${todaySleep?.score || "--"}`}
               trendPositive={trend(data.sleep.map((s) => s.score)) === "up"}
@@ -527,7 +518,7 @@ export default function DashboardPage() {
               label="Avg Steps"
               value={avgSteps.toLocaleString()}
               icon={Footprints}
-              color="#10b981"
+              color={COLORS.steps}
               trend={trend(data.activity.map((a) => a.steps))}
               trendLabel={`Latest ${todayActivity?.steps?.toLocaleString() || "--"}`}
               trendPositive={trend(data.activity.map((a) => a.steps)) === "up"}
@@ -537,7 +528,7 @@ export default function DashboardPage() {
               value={average(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate)) || "--"}
               unit="bpm"
               icon={Heart}
-              color="#f43f5e"
+              color={COLORS.heartRate}
               trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate))}
               trendLabel={`Last night ${todaySleepPeriod ? Math.round(todaySleepPeriod.average_heart_rate) : "--"}`}
               trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_heart_rate)) === "down"}
@@ -547,7 +538,7 @@ export default function DashboardPage() {
               value={average(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv)) || "--"}
               unit="ms"
               icon={Wind}
-              color="#8b5cf6"
+              color={COLORS.hrv}
               trend={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv))}
               trendLabel={`Last night ${todaySleepPeriod ? Math.round(todaySleepPeriod.average_hrv) : "--"}`}
               trendPositive={trend(data.sleepPeriods.filter((s) => s.type === "long_sleep").map((s) => s.average_hrv)) === "up"}
@@ -560,14 +551,14 @@ export default function DashboardPage() {
               <ScoreLineChart
                 data={data.sleep}
                 title="Sleep Score Trend"
-                color="#6366f1"
+                color={COLORS.sleep}
                 gradientId="sleepGrad"
                 domain={[40, 100]}
               />
               <ScoreLineChart
                 data={data.readiness}
                 title="Readiness Score Trend"
-                color="#10b981"
+                color={COLORS.readiness}
                 gradientId="readinessGrad"
                 domain={[40, 100]}
               />
@@ -577,7 +568,7 @@ export default function DashboardPage() {
               <ScoreLineChart
                 data={data.activity}
                 title="Activity Score Trend"
-                color="#f59e0b"
+                color={COLORS.activity}
                 gradientId="activityGrad"
                 domain={[40, 100]}
               />
@@ -588,8 +579,8 @@ export default function DashboardPage() {
                   hrv: s.average_hrv,
                 }))}
                 lines={[
-                  { key: "hr", color: "#f43f5e", name: "Heart Rate" },
-                  { key: "hrv", color: "#8b5cf6", name: "HRV" },
+                  { key: "hr", color: COLORS.heartRate, name: "Heart Rate" },
+                  { key: "hrv", color: COLORS.hrv, name: "HRV" },
                 ]}
                 title="Heart Rate & HRV During Sleep"
               />

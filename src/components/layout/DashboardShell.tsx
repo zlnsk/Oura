@@ -2,13 +2,13 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, memo } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 import { StatusChip } from "@/components/ui/StatusChip";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 
-function LoadingBar() {
+const LoadingBar = memo(function LoadingBar() {
   const { loading } = useOuraData();
   if (!loading) return null;
   return (
@@ -16,9 +16,9 @@ function LoadingBar() {
       <div className="h-full bg-oura-500 animate-loading-bar" />
     </div>
   );
-}
+});
 
-function ConnectionStatus() {
+const ConnectionStatus = memo(function ConnectionStatus() {
   const { loading, isOffline, isStale, error, lastUpdated } = useOuraData();
 
   let variant: "synced" | "syncing" | "stale" | "offline" | "error" = "synced";
@@ -45,11 +45,11 @@ function ConnectionStatus() {
   }
 
   return (
-    <div className="fixed top-4 right-8 z-40">
+    <div className="fixed top-4 right-4 sm:right-8 z-40">
       <StatusChip variant={variant} label={label} />
     </div>
   );
-}
+});
 
 export function DashboardShell({ children }: { children: React.ReactNode }) {
   const { data: session, status } = useSession();
@@ -79,11 +79,12 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
       <LoadingBar />
       <ConnectionStatus />
       <Sidebar />
-      <main className="ml-64 p-8 lg:p-10 transition-all duration-300">
+      <main
+        id="main-content"
+        className="lg:ml-64 p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 xl:p-10 transition-all duration-300"
+      >
         <div className="max-w-[1400px] mx-auto">
-          <ErrorBoundary>
-            {children}
-          </ErrorBoundary>
+          <ErrorBoundary>{children}</ErrorBoundary>
         </div>
       </main>
     </div>

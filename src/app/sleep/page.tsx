@@ -21,6 +21,7 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
+import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
 import type { SleepPeriod } from "@/types/oura";
 
@@ -98,7 +99,7 @@ export default function SleepPage() {
         title="Sleep Analysis"
         subtitle="Detailed sleep metrics and patterns"
         icon={BedDouble}
-        iconColor="#6366f1"
+        iconColor={COLORS.sleep}
         action={
           <div className="flex items-center gap-3">
             <DateNavigator selectedDate={selectedDate} onDateChange={setSelectedDate} />
@@ -244,7 +245,7 @@ export default function SleepPage() {
               <IntradayChart
                 data={sleepHR}
                 title="Heart Rate During Sleep"
-                color="#f43f5e"
+                color={COLORS.heartRate}
                 unit=" bpm"
                 avgValue={selectedPeriod ? Math.round(selectedPeriod.average_heart_rate) : undefined}
                 gradientId="sleepHRGrad"
@@ -252,7 +253,7 @@ export default function SleepPage() {
               <IntradayChart
                 data={sleepHRV}
                 title="HRV During Sleep"
-                color="#8b5cf6"
+                color={COLORS.hrv}
                 unit=" ms"
                 avgValue={selectedPeriod ? Math.round(selectedPeriod.average_hrv) : undefined}
                 gradientId="sleepHRVGrad"
@@ -271,7 +272,7 @@ export default function SleepPage() {
               label="Avg Total Sleep"
               value={formatDuration(avgTotal)}
               icon={Clock}
-              color="#6366f1"
+              color={COLORS.sleep}
               trend={trend(periods.map((p) => p.total_sleep_duration))}
               trendPositive={trend(periods.map((p) => p.total_sleep_duration)) === "up"}
             />
@@ -288,7 +289,7 @@ export default function SleepPage() {
               value={avgHRV}
               unit="ms"
               icon={Wind}
-              color="#8b5cf6"
+              color={COLORS.hrv}
               trend={trend(periods.map((p) => p.average_hrv))}
               trendPositive={trend(periods.map((p) => p.average_hrv)) === "up"}
             />
@@ -297,7 +298,7 @@ export default function SleepPage() {
               value={avgHR}
               unit="bpm"
               icon={Heart}
-              color="#f43f5e"
+              color={COLORS.heartRate}
               trend={trend(periods.map((p) => p.average_heart_rate))}
               trendPositive={trend(periods.map((p) => p.average_heart_rate)) === "down"}
             />
@@ -308,7 +309,7 @@ export default function SleepPage() {
             <ScoreLineChart
               data={dailySleep}
               title="Sleep Score Over Time"
-              color="#6366f1"
+              color={COLORS.sleep}
               gradientId="sleepScoreGrad"
               domain={[40, 100]}
             />
@@ -326,7 +327,7 @@ export default function SleepPage() {
                 data={periods.map((p) => ({ day: p.day, score: p.average_hrv }))}
                 dataKey="score"
                 title="HRV During Sleep (Trend)"
-                color="#8b5cf6"
+                color={COLORS.hrv}
                 gradientId="hrvGrad"
                 unit=" ms"
               />
@@ -337,8 +338,8 @@ export default function SleepPage() {
                   lowest: p.lowest_heart_rate,
                 }))}
                 lines={[
-                  { key: "avg", color: "#f43f5e", name: "Avg HR" },
-                  { key: "lowest", color: "#06b6d4", name: "Lowest HR" },
+                  { key: "avg", color: COLORS.heartRate, name: "Avg HR" },
+                  { key: "lowest", color: COLORS.spo2, name: "Lowest HR" },
                 ]}
                 title="Heart Rate During Sleep (Trend)"
                 unit=" bpm"
