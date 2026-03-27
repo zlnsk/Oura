@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: "/oura",
+  basePath: "/Oura",
   images: {
     remotePatterns: [
       {
