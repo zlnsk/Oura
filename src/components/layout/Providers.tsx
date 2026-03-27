@@ -7,7 +7,7 @@ import { ToastProvider } from "@/components/ui/Toast";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider>
+    <SessionProvider basePath="/Oura/api/auth">
       <ThemeProvider>
         <ToastProvider>
           <OuraDataProvider>{children}</OuraDataProvider>

@@ -215,6 +215,17 @@ export interface Tag {
   tag_type_code: string;
 }
 
+export interface WithingsWeightEntry {
+  day: string;
+  weight: number; // kg
+  fat_mass_weight?: number; // kg
+  fat_ratio?: number; // %
+  muscle_mass?: number; // kg
+  bone_mass?: number; // kg
+  hydration?: number; // kg
+  timestamp: string;
+}
+
 export interface OuraApiResponse<T> {
   data: T[];
   next_token: string | null;
@@ -235,5 +246,6 @@ export interface DashboardData {
   vo2Max: Vo2Max[];
   sleepTime: SleepTime[];
   tags: Tag[];
+  weight: WithingsWeightEntry[];
   personalInfo: OuraPersonalInfo | null;
 }

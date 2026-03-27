@@ -15,6 +15,7 @@ import {
   Zap,
   Brain,
   Dumbbell,
+  Scale,
   Settings,
   LogOut,
   Sparkles,
@@ -25,6 +26,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { StatusBar } from "@/components/ui/StatusBar";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Today" },
@@ -34,6 +36,7 @@ const navItems = [
   { href: "/heart-rate", icon: Heart, label: "Heart Rate" },
   { href: "/stress", icon: Brain, label: "Stress" },
   { href: "/workouts", icon: Dumbbell, label: "Workouts" },
+  { href: "/weight", icon: Scale, label: "Weight" },
 ];
 
 export function Sidebar() {
@@ -223,6 +226,11 @@ export function Sidebar() {
             <ChevronLeft className="w-5 h-5" />
           )}
         </button>
+      </div>
+
+      {/* Status bar */}
+      <div className="border-t border-slate-200/50 dark:border-slate-800/30">
+        <StatusBar collapsed={collapsed} />
       </div>
     </>
   );

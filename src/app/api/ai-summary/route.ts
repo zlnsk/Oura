@@ -293,6 +293,19 @@ function extractSpo2(data: DataRecord) {
     }>) || []
   );
 }
+function extractWeight(data: DataRecord) {
+  return (
+    (data.weight as Array<{
+      day: string;
+      weight: number;
+      fat_mass_weight?: number;
+      fat_ratio?: number;
+      muscle_mass?: number;
+      bone_mass?: number;
+      hydration?: number;
+    }>) || []
+  );
+}
 function extractCardiovascularAge(data: DataRecord) {
   return (
     (data.cardiovascularAge as Array<{
@@ -333,6 +346,8 @@ function buildPrompt(data: DataRecord, page: string): string {
       return buildStressPrompt(data);
     case "workouts":
       return buildWorkoutsPrompt(data);
+    case "weight":
+      return buildWeightPrompt(data);
     default:
       return buildDashboardPrompt(data);
   }
@@ -500,4 +515,42 @@ ${workouts.slice(-14).map((w) => {
 ${activity.slice(-7).map((a) => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories}`).join("\n") || "No data"}
 
 Focus on: workout frequency and consistency, intensity distribution, calorie burn patterns, variety of activities, and recovery between sessions.`;
+}
+
+function buildWeightPrompt(data: DataRecord): string {
+  const weight = extractWeight(data);
+  const activity = extractActivity(data);
+
+  const hasBodyComp = weight.some(
+    (w) => w.fat_ratio != null || w.muscle_mass != null
+  );
+
+  const weightDetails = weight
+    .slice(-30)
+    .map((w) => {
+      let line = `${w.day}: ${w.weight}kg`;
+      if (w.fat_ratio != null) line += ` fat=${w.fat_ratio.toFixed(1)}%`;
+      if (w.muscle_mass != null)
+        line += ` muscle=${w.muscle_mass.toFixed(1)}kg`;
+      if (w.fat_mass_weight != null)
+        line += ` fat_mass=${w.fat_mass_weight.toFixed(1)}kg`;
+      return line;
+    })
+    .join("\n");
+
+  return `You are a body composition and weight analyst for a health dashboard. The user is viewing their Weight page with data from a Withings smart scale. Analyze weight trends, body composition changes, and provide actionable insights. Be specific with numbers. ${jsonInstructions()}
+
+## Weight Measurements (last 30 entries)
+${weightDetails || "No data"}
+
+${
+  hasBodyComp
+    ? "## Note: Body composition data is available (fat %, muscle mass). Analyze composition trends, not just total weight."
+    : "## Note: Only weight data is available (no body composition)."
+}
+
+## Activity Context (last 7 days)
+${activity.slice(-7).map((a) => `${a.day}: score=${a.score} steps=${a.steps} cal=${a.total_calories}`).join("\n") || "No data"}
+
+Focus on: weight trend direction and rate of change, body composition improvements (if available), correlation with activity levels, consistency of measurements, and realistic goal-setting advice. If body fat and muscle data are available, emphasize body composition over total weight.`;
 }
