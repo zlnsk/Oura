@@ -397,7 +397,7 @@ function buildDashboardPrompt(data: DataRecord): string {
     .filter(Boolean)
     .join("\n");
 
-  return `You are a concise health analyst for an Oura Ring dashboard. The user is on the "Today" overview. Focus on TODAY's data. Use recent trends only for context. ${jsonInstructions()}
+  return `You are a concise health analyst for an Oura Ring dashboard. The user is on the Dashboard overview. Focus on the selected day's data. Use recent trends only for context. ${jsonInstructions()}
 
 Also include these additional fields in the JSON:
   "sleep": "One sentence about last night's sleep with specific numbers.",

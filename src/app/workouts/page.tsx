@@ -18,10 +18,12 @@ import {
   MapPin,
   Tag,
   RefreshCw,
+  ChevronDown,
 } from "lucide-react";
-import { average, formatDuration } from "@/lib/utils";
+import { average, formatDuration, cn } from "@/lib/utils";
 import { COLORS } from "@/lib/constants";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
+import { WorkoutDetail } from "@/components/ui/WorkoutDetail";
 import type { Workout } from "@/types/oura";
 
 function getToday(): string {
@@ -36,6 +38,7 @@ function workoutDuration(w: Workout): number {
 export default function WorkoutsPage() {
   const { data, loading, fetchData } = useOuraData();
   const [selectedDate, setSelectedDate] = useState(getToday());
+  const [expandedWorkout, setExpandedWorkout] = useState<string | null>(null);
 
   useEffect(() => {
     if (!data) fetchData();
@@ -111,7 +114,7 @@ export default function WorkoutsPage() {
           {/* Day stats */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard
-              label="Workouts Today"
+              label="Workouts"
               value={dayWorkouts.length}
               icon={Dumbbell}
               color={COLORS.heartRate}
@@ -151,49 +154,61 @@ export default function WorkoutsPage() {
                   No workouts on this day
                 </div>
               ) : (
-                dayWorkouts.map((w) => (
-                  <div
-                    key={w.id}
-                    className="p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
-                          <Dumbbell className="w-5 h-5 text-rose-500" />
+                dayWorkouts.map((w) => {
+                  const isExpanded = expandedWorkout === w.id;
+                  return (
+                    <div key={w.id}>
+                      <button
+                        onClick={() => setExpandedWorkout(isExpanded ? null : w.id)}
+                        className="w-full p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-left cursor-pointer"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-950/30 flex items-center justify-center">
+                              <Dumbbell className="w-5 h-5 text-rose-500" />
+                            </div>
+                            <div>
+                              <p className="font-medium text-sm capitalize">
+                                {w.activity?.replace(/_/g, " ") || "Workout"}
+                              </p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(w.start_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                                {" \u2014 "}
+                                {new Date(w.end_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm">
+                            <div className="text-right">
+                              <p className="font-semibold">{Math.round(w.calories || 0)} cal</p>
+                              <p className="text-xs text-gray-400">
+                                {formatDuration(workoutDuration(w))}
+                              </p>
+                            </div>
+                            <span
+                              className={`badge ${
+                                w.intensity === "high"
+                                  ? "badge-danger"
+                                  : w.intensity === "medium"
+                                  ? "badge-warning"
+                                  : "badge-success"
+                              }`}
+                            >
+                              {w.intensity}
+                            </span>
+                            <ChevronDown
+                              className={cn(
+                                "w-4 h-4 text-gray-400 transition-transform duration-200",
+                                isExpanded && "rotate-180"
+                              )}
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm capitalize">
-                            {w.activity?.replace(/_/g, " ") || "Workout"}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {new Date(w.start_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                            {" \u2014 "}
-                            {new Date(w.end_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-6 text-sm">
-                        <div className="text-right">
-                          <p className="font-semibold">{Math.round(w.calories || 0)} cal</p>
-                          <p className="text-xs text-gray-400">
-                            {formatDuration(workoutDuration(w))}
-                          </p>
-                        </div>
-                        <span
-                          className={`badge ${
-                            w.intensity === "high"
-                              ? "badge-danger"
-                              : w.intensity === "medium"
-                              ? "badge-warning"
-                              : "badge-success"
-                          }`}
-                        >
-                          {w.intensity}
-                        </span>
-                      </div>
+                      </button>
+                      {isExpanded && <WorkoutDetail workout={w} />}
                     </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>

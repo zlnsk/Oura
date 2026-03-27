@@ -285,7 +285,7 @@ function TodayProgress({
               <div className="flex items-center gap-2 mb-4">
                 <Zap className="w-4 h-4 text-emerald-400" />
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Today&apos;s Readiness
+                  Readiness
                 </h3>
               </div>
               <div className="space-y-2">
@@ -306,7 +306,7 @@ function TodayProgress({
               <div className="flex items-center gap-2 mb-4">
                 <Activity className="w-4 h-4 text-amber-400" />
                 <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                  Today&apos;s Activity
+                  Activity
                 </h3>
               </div>
 
@@ -454,7 +454,7 @@ export default function DashboardPage() {
     <DashboardShell>
       <OnboardingGuard>
       <PageHeader
-        title="Daily View"
+        title="Dashboard"
         subtitle={new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
         icon={LayoutDashboard}
         iconColor={COLORS.brand}

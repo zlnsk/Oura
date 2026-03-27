@@ -168,6 +168,20 @@ export interface Workout {
   label: string | null;
   source: string;
   start_datetime: string;
+  average_heart_rate?: number;
+  max_heart_rate?: number;
+  average_speed?: number; // m/s
+  max_speed?: number; // m/s
+  heart_rate?: {
+    interval: number;
+    items: number[];
+    timestamp: string;
+  };
+  speed?: {
+    interval: number;
+    items: number[];
+    timestamp: string;
+  };
 }
 
 export interface Session {

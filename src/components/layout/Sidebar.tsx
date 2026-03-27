@@ -29,7 +29,7 @@ import { cn } from "@/lib/utils";
 import { StatusBar } from "@/components/ui/StatusBar";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard, label: "Today" },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/sleep", icon: BedDouble, label: "Sleep" },
   { href: "/activity", icon: Activity, label: "Activity" },
   { href: "/readiness", icon: Zap, label: "Readiness" },
