@@ -17,6 +17,7 @@ import {
   Brain,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BASE_PATH } from "@/lib/constants";
 import { useToast } from "@/components/ui/Toast";
 
 export default function SettingsPage() {
@@ -40,14 +41,14 @@ export default function SettingsPage() {
   const [aiMessage, setAiMessage] = useState("");
 
   useEffect(() => {
-    fetch("/api/settings/token")
+    fetch(`${BASE_PATH}/api/settings/token`)
       .then((res) => res.json())
       .then((data) => {
         if (data.hasToken) setHasKey(true);
       })
       .catch(() => {});
 
-    fetch("/api/settings/ai-key")
+    fetch(`${BASE_PATH}/api/settings/ai-key`)
       .then((res) => res.json())
       .then((data) => {
         if (data.hasKey) setHasAiKey(true);
@@ -64,7 +65,7 @@ export default function SettingsPage() {
       return;
     }
     try {
-      const res = await fetch("/api/settings/token", {
+      const res = await fetch(`${BASE_PATH}/api/settings/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: trimmed }),
@@ -88,7 +89,7 @@ export default function SettingsPage() {
   const handleDelete = async () => {
     if (!confirm("Remove your Oura API key? You'll need to re-enter it to use the dashboard.")) return;
     try {
-      await fetch("/api/settings/token", { method: "DELETE" });
+      await fetch(`${BASE_PATH}/api/settings/token`, { method: "DELETE" });
     } catch {}
     setApiKey("");
     setHasKey(false);
@@ -107,7 +108,7 @@ export default function SettingsPage() {
         setTestMessage("Invalid token format. Token must be at least 10 characters and contain only letters, numbers, hyphens, and underscores.");
         return;
       }
-      const saveRes = await fetch("/api/settings/token", {
+      const saveRes = await fetch(`${BASE_PATH}/api/settings/token`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token: trimmed }),
@@ -122,7 +123,7 @@ export default function SettingsPage() {
 
     setTestStatus("testing");
     try {
-      const res = await fetch("/api/oura/all?days=1");
+      const res = await fetch(`${BASE_PATH}/api/oura/all?days=1`);
       if (res.ok) {
         setTestStatus("success");
         setTestMessage("Connection successful! Your Oura data is accessible.");
@@ -150,7 +151,7 @@ export default function SettingsPage() {
     }
     setAiStatus("saving");
     try {
-      const res = await fetch("/api/settings/ai-key", {
+      const res = await fetch(`${BASE_PATH}/api/settings/ai-key`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ key: trimmed }),
@@ -178,7 +179,7 @@ export default function SettingsPage() {
   const handleDeleteAiKey = async () => {
     if (!confirm("Remove your Anthropic API key?")) return;
     try {
-      await fetch("/api/settings/ai-key", { method: "DELETE" });
+      await fetch(`${BASE_PATH}/api/settings/ai-key`, { method: "DELETE" });
     } catch {}
     setAiKey("");
     setHasAiKey(false);

@@ -2,6 +2,9 @@
 // Shared constants – single source of truth for magic values
 // ---------------------------------------------------------------------------
 
+// Base path — must match next.config.js basePath
+export const BASE_PATH = "/oura";
+
 // API & Data
 export const OURA_BASE_URL = "https://api.ouraring.com/v2/usercollection";
 export const CHUNK_SIZE_DAYS = 90;

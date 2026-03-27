@@ -4,13 +4,14 @@ import { useState, useEffect } from "react";
 import { useOuraData } from "@/components/layout/OuraDataProvider";
 import { Key, ArrowRight, CheckCircle2, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { BASE_PATH } from "@/lib/constants";
 
 export function OnboardingGuard({ children }: { children: React.ReactNode }) {
   const { data, loading, error } = useOuraData();
   const [hasToken, setHasToken] = useState<boolean | null>(null);
 
   useEffect(() => {
-    fetch("/api/settings/token")
+    fetch(`${BASE_PATH}/api/settings/token`)
       .then((r) => r.json())
       .then((d) => setHasToken(d.hasToken === true))
       .catch(() => setHasToken(false));
