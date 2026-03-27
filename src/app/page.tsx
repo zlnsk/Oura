@@ -44,7 +44,7 @@ export default function LoginPage() {
       </button>
 
       {/* Content */}
-      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4">
+      <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-12">
         {/* Logo & title */}
         <div className="animate-slide-up flex flex-col items-center mb-12">
           <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-oura-500 via-oura-600 to-accent-violet flex items-center justify-center mb-6">

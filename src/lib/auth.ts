@@ -30,8 +30,8 @@ export const authOptions: NextAuthOptions = {
     },
   },
   pages: {
-    signIn: "https://apps.lukasz.com/Oura",
-    error: "https://apps.lukasz.com/Oura",
+    signIn: process.env.NEXTAUTH_URL || "/",
+    error: process.env.NEXTAUTH_URL || "/",
   },
   cookies: {
     sessionToken: {
