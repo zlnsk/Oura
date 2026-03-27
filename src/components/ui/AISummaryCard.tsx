@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Sparkles, RefreshCw, Zap } from "lucide-react";
 import type { DashboardData } from "@/types/oura";
+import { BASE_PATH } from "@/lib/constants";
 
 export type PageType = "dashboard" | "sleep" | "activity" | "readiness" | "heart-rate" | "stress" | "workouts";
 
@@ -20,7 +21,7 @@ export function AISummaryCard({ page, data }: { page: PageType; data: DashboardD
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/ai-summary", {
+      const res = await fetch(`${BASE_PATH}/api/ai-summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ data, page }),
