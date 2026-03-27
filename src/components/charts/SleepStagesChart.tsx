@@ -39,7 +39,7 @@ export const SleepStagesChart = memo(function SleepStagesChart({
 
   return (
     <div className="premium-card p-6">
-      <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">
+      <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
         {title}
       </h3>
       <ResponsiveContainer width="100%" height={height}>
@@ -66,11 +66,11 @@ export const SleepStagesChart = memo(function SleepStagesChart({
           <Tooltip
             contentStyle={{
               backgroundColor: isDark ? "#1a1a24" : "#ffffff",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9"}`,
-              borderRadius: "16px",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "#e5e7eb"}`,
+              borderRadius: "12px",
               boxShadow: isDark
-                ? "0 4px 16px rgba(0,0,0,0.3)"
-                : "0 4px 16px rgba(0,0,0,0.08)",
+                ? "none"
+                : "none",
               padding: "12px 16px",
             }}
             labelFormatter={(label) => formatDate(label as string)}

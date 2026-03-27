@@ -79,7 +79,7 @@ export default function WeightPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="rounded-full p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
             >
               <RefreshCw
                 className={`w-4 h-4 ${loading ? "animate-spin" : ""}`}
@@ -93,11 +93,11 @@ export default function WeightPage() {
 
       {noWithingsData && (
         <div className="flex flex-col items-center justify-center py-20 px-4">
-          <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 flex items-center justify-center mb-6">
-            <Scale className="w-8 h-8 text-slate-300 dark:text-slate-600" />
+          <div className="w-16 h-16 rounded-2xl bg-gray-50 dark:bg-white/5 flex items-center justify-center mb-6">
+            <Scale className="w-8 h-8 text-gray-300 dark:text-gray-600" />
           </div>
           <h3 className="text-lg font-semibold mb-2">No weight data available</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400 text-center max-w-md">
+          <p className="text-sm text-gray-500 dark:text-gray-400 text-center max-w-md">
             Connect your Withings account in Settings to see your weight and body composition data here.
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function WeightPage() {
                   <h3 className="font-semibold text-sm">
                     {latest.day === getToday() ? "Today" : latest.day}
                   </h3>
-                  <p className="text-[10px] text-slate-500 dark:text-slate-400">
+                  <p className="text-[10px] text-gray-500 dark:text-gray-400">
                     Latest measurement
                   </p>
                 </div>
@@ -128,14 +128,14 @@ export default function WeightPage() {
                   <p className="text-2xl font-bold text-teal-600 dark:text-teal-400">
                     {formatWeight(latest.weight)}
                   </p>
-                  <p className="text-xs text-slate-500 mt-1">Weight (kg)</p>
+                  <p className="text-xs text-gray-500 mt-1">Weight (kg)</p>
                 </div>
                 {latest.fat_ratio != null && (
                   <div className="text-center">
                     <p className="text-2xl font-bold text-orange-500">
                       {latest.fat_ratio.toFixed(1)}%
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Body Fat</p>
+                    <p className="text-xs text-gray-500 mt-1">Body Fat</p>
                   </div>
                 )}
                 {latest.muscle_mass != null && (
@@ -143,7 +143,7 @@ export default function WeightPage() {
                     <p className="text-2xl font-bold text-indigo-500">
                       {formatWeight(latest.muscle_mass)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Muscle (kg)</p>
+                    <p className="text-xs text-gray-500 mt-1">Muscle (kg)</p>
                   </div>
                 )}
                 {latest.fat_mass_weight != null && (
@@ -151,15 +151,15 @@ export default function WeightPage() {
                     <p className="text-2xl font-bold text-amber-500">
                       {formatWeight(latest.fat_mass_weight)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Fat Mass (kg)</p>
+                    <p className="text-xs text-gray-500 mt-1">Fat Mass (kg)</p>
                   </div>
                 )}
                 {latest.bone_mass != null && (
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-slate-500">
+                    <p className="text-2xl font-bold text-gray-500">
                       {formatWeight(latest.bone_mass)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Bone Mass (kg)</p>
+                    <p className="text-xs text-gray-500 mt-1">Bone Mass (kg)</p>
                   </div>
                 )}
                 {latest.hydration != null && (
@@ -167,7 +167,7 @@ export default function WeightPage() {
                     <p className="text-2xl font-bold text-cyan-500">
                       {formatWeight(latest.hydration)}
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">Hydration (kg)</p>
+                    <p className="text-xs text-gray-500 mt-1">Hydration (kg)</p>
                   </div>
                 )}
               </div>
@@ -218,7 +218,7 @@ export default function WeightPage() {
 
           {/* Trends header */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
               Trends
             </h3>
             <DateRangeSelector />
@@ -282,19 +282,19 @@ export default function WeightPage() {
 
           {/* Measurement log */}
           <div className="premium-card p-6">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
               Recent Measurements
             </h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200/60 dark:border-slate-800/40">
-                    <th className="text-left py-2 px-3 font-medium text-slate-500">Date</th>
-                    <th className="text-right py-2 px-3 font-medium text-slate-500">Weight</th>
+                  <tr className="border-b border-[var(--border)]">
+                    <th className="text-left py-2 px-3 font-medium text-gray-500">Date</th>
+                    <th className="text-right py-2 px-3 font-medium text-gray-500">Weight</th>
                     {hasBodyComp && (
                       <>
-                        <th className="text-right py-2 px-3 font-medium text-slate-500">Body Fat</th>
-                        <th className="text-right py-2 px-3 font-medium text-slate-500">Muscle</th>
+                        <th className="text-right py-2 px-3 font-medium text-gray-500">Body Fat</th>
+                        <th className="text-right py-2 px-3 font-medium text-gray-500">Muscle</th>
                       </>
                     )}
                   </tr>
@@ -307,16 +307,16 @@ export default function WeightPage() {
                     .map((w) => (
                       <tr
                         key={w.timestamp}
-                        className="border-b border-slate-100/60 dark:border-slate-800/20 hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
+                        className="border-b border-[var(--border)] hover:bg-gray-50/50 dark:hover:bg-white/[0.02]"
                       >
-                        <td className="py-2 px-3 text-slate-600 dark:text-slate-300">{w.day}</td>
+                        <td className="py-2 px-3 text-gray-600 dark:text-gray-300">{w.day}</td>
                         <td className="py-2 px-3 text-right font-medium">{formatWeight(w.weight)} kg</td>
                         {hasBodyComp && (
                           <>
-                            <td className="py-2 px-3 text-right text-slate-500">
+                            <td className="py-2 px-3 text-right text-gray-500">
                               {w.fat_ratio != null ? `${w.fat_ratio.toFixed(1)}%` : "–"}
                             </td>
-                            <td className="py-2 px-3 text-right text-slate-500">
+                            <td className="py-2 px-3 text-right text-gray-500">
                               {w.muscle_mass != null ? `${formatWeight(w.muscle_mass)} kg` : "–"}
                             </td>
                           </>

@@ -46,7 +46,7 @@ export default function ReadinessPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="rounded-full p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -126,7 +126,7 @@ export default function ReadinessPage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Trends</h3>
             <DateRangeSelector />
           </div>
           <Suspense fallback={<ChartSkeleton />}>
@@ -157,7 +157,7 @@ export default function ReadinessPage() {
           {/* Contributors */}
           {latest?.contributors && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
                 Readiness Contributors (Latest)
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
@@ -169,7 +169,7 @@ export default function ReadinessPage() {
                       strokeWidth={5}
                       className="mx-auto"
                     />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 capitalize">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 capitalize">
                       {key.replace(/_/g, " ")}
                     </p>
                   </div>

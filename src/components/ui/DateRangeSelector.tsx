@@ -14,17 +14,17 @@ export function DateRangeSelector() {
   const { days, setDays, loading } = useOuraData();
 
   return (
-    <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-white/5 rounded-full">
+    <div className="flex items-center gap-0.5 p-1 border border-[var(--border)] rounded-full">
       {ranges.map(({ label, days: d }) => (
         <button
           key={d}
           onClick={() => setDays(d)}
           disabled={loading}
           className={cn(
-            "px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-200",
+            "px-3 py-1.5 text-xs font-semibold rounded-full transition-all duration-150",
             days === d
-              ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm"
-              : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white"
+              ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+              : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
           )}
         >
           {label}

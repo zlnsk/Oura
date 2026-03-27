@@ -13,7 +13,7 @@ interface ScoreRingProps {
 export function ScoreRing({
   score,
   size = 96,
-  strokeWidth = 8,
+  strokeWidth = 6,
   label,
   className,
 }: ScoreRingProps) {
@@ -46,7 +46,7 @@ export function ScoreRing({
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-slate-100 dark:text-white/5"
+            className="text-gray-100 dark:text-white/5"
           />
           <circle
             cx={size / 2}
@@ -67,7 +67,7 @@ export function ScoreRing({
       </div>
       {label && (
         <div className="mt-2 text-center">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
+          <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
             {label}
           </p>
         </div>

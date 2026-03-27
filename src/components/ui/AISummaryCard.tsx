@@ -43,18 +43,18 @@ export function AISummaryCard({ page, data }: { page: PageType; data: DashboardD
     <div className="premium-card overflow-hidden">
       <div className="p-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-violet-500" />
+          <div className="w-9 h-9 rounded-full bg-gray-100 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center">
+            <Sparkles className="w-4 h-4 text-gray-500 dark:text-gray-400" />
           </div>
           <div>
             <h3 className="font-semibold text-sm">AI Insight</h3>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400">Powered by Claude</p>
+            <p className="text-[10px] text-gray-500 dark:text-gray-400">Powered by Claude</p>
           </div>
         </div>
         <button
           onClick={fetchSummary}
           disabled={loading}
-          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full border border-[var(--border)] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors disabled:opacity-50"
         >
           {loading ? (
             <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Analyzing...</>
@@ -76,19 +76,19 @@ export function AISummaryCard({ page, data }: { page: PageType; data: DashboardD
           {loading && !summary && (
             <div className="space-y-2">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-3 bg-slate-100 dark:bg-white/5 rounded-lg animate-pulse" style={{ width: `${90 - i * 15}%` }} />
+                <div key={i} className="h-3 bg-gray-100 dark:bg-white/5 rounded-lg animate-pulse" style={{ width: `${90 - i * 15}%` }} />
               ))}
             </div>
           )}
           {summary && (
             <div className="space-y-3">
-              <p className="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+              <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
                 {summary.overall}
               </p>
               {summary.tip && (
-                <div className="flex items-start gap-2 p-3 rounded-lg bg-slate-50 dark:bg-white/5 border-l-2 border-oura-400">
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border-l-2 border-oura-400">
                   <Zap className="w-3.5 h-3.5 text-oura-400 mt-0.5 shrink-0" />
-                  <p className="text-xs font-medium text-slate-600 dark:text-slate-300">{summary.tip}</p>
+                  <p className="text-xs font-medium text-gray-600 dark:text-gray-300">{summary.tip}</p>
                 </div>
               )}
             </div>

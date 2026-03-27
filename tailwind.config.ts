@@ -39,18 +39,16 @@ const config: Config = {
         },
       },
       boxShadow: {
-        "glass": "0 4px 16px 0 rgba(0, 0, 0, 0.04)",
-        "glass-dark": "0 4px 16px 0 rgba(0, 0, 0, 0.12)",
-        "card": "0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02)",
-        "card-dark": "0 1px 3px rgba(0, 0, 0, 0.2), 0 1px 2px rgba(0, 0, 0, 0.1)",
-        "card-hover": "0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.03)",
-        "soft": "0 2px 8px rgba(0, 0, 0, 0.04)",
-        "soft-dark": "0 2px 8px rgba(0, 0, 0, 0.16)",
+        "glass": "none",
+        "glass-dark": "none",
+        "card": "0 1px 2px rgba(0, 0, 0, 0.04)",
+        "card-dark": "0 1px 2px rgba(0, 0, 0, 0.1)",
+        "card-hover": "0 2px 8px rgba(0, 0, 0, 0.06)",
+        "soft": "0 1px 3px rgba(0, 0, 0, 0.04)",
+        "soft-dark": "0 1px 3px rgba(0, 0, 0, 0.12)",
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "mesh-gradient": "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        "mesh-dark": "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
       },
       screens: {
         "motion-safe": { raw: "(prefers-reduced-motion: no-preference)" },
@@ -63,17 +61,15 @@ const config: Config = {
       },
       transitionTimingFunction: {
         "m3": "cubic-bezier(0.2, 0, 0, 1)",
-        "m3-decel": "cubic-bezier(0, 0, 0, 1)",
-        "m3-accel": "cubic-bezier(0.3, 0, 1, 1)",
       },
       animation: {
-        "fade-in": "fadeIn 0.4s cubic-bezier(0.2, 0, 0, 1)",
-        "slide-up": "slideUp 0.4s cubic-bezier(0.2, 0, 0, 1)",
-        "slide-in-right": "slideInRight 0.3s cubic-bezier(0.2, 0, 0, 1)",
+        "fade-in": "fadeIn 0.3s ease",
+        "slide-up": "slideUp 0.3s ease",
+        "slide-in-right": "slideInRight 0.25s ease",
         "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "float": "float 6s ease-in-out infinite",
         "shimmer": "shimmer 2s linear infinite",
-        "loading-bar": "loadingBar 1.5s cubic-bezier(0.2, 0, 0, 1) infinite",
+        "loading-bar": "loadingBar 1.5s ease infinite",
       },
       keyframes: {
         fadeIn: {
@@ -81,11 +77,11 @@ const config: Config = {
           "100%": { opacity: "1" },
         },
         slideUp: {
-          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "0%": { opacity: "0", transform: "translateY(8px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         slideInRight: {
-          "0%": { opacity: "0", transform: "translateX(10px)" },
+          "0%": { opacity: "0", transform: "translateX(8px)" },
           "100%": { opacity: "1", transform: "translateX(0)" },
         },
         float: {

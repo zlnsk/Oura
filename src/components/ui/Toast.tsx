@@ -55,7 +55,7 @@ function ToastItem({
     <div
       role="alert"
       className={cn(
-        "flex items-center gap-2.5 px-4 py-3 rounded-xl border shadow-lg backdrop-blur-sm text-sm font-medium animate-slide-up",
+        "flex items-center gap-2.5 px-4 py-3 rounded-full border text-sm font-medium animate-slide-up",
         styles[t.type]
       )}
     >

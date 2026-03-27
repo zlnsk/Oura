@@ -93,7 +93,7 @@ export default function WorkoutsPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="rounded-full p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -140,21 +140,21 @@ export default function WorkoutsPage() {
 
           {/* Day workouts list */}
           <div className="premium-card overflow-hidden">
-            <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+            <div className="p-6 border-b border-[var(--border)]">
               <h3 className="font-semibold">
                 Workouts on {new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" })}
               </h3>
             </div>
             <div className="divide-y divide-slate-200/60 dark:divide-slate-800/40">
               {dayWorkouts.length === 0 ? (
-                <div className="p-8 text-center text-sm text-slate-400">
+                <div className="p-8 text-center text-sm text-gray-400">
                   No workouts on this day
                 </div>
               ) : (
                 dayWorkouts.map((w) => (
                   <div
                     key={w.id}
-                    className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                    className="p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -165,7 +165,7 @@ export default function WorkoutsPage() {
                           <p className="font-medium text-sm capitalize">
                             {w.activity?.replace(/_/g, " ") || "Workout"}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-gray-400">
                             {new Date(w.start_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                             {" \u2014 "}
                             {new Date(w.end_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -175,7 +175,7 @@ export default function WorkoutsPage() {
                       <div className="flex items-center gap-6 text-sm">
                         <div className="text-right">
                           <p className="font-semibold">{Math.round(w.calories || 0)} cal</p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-gray-400">
                             {formatDuration(workoutDuration(w))}
                           </p>
                         </div>
@@ -201,14 +201,14 @@ export default function WorkoutsPage() {
           {/* Day sessions */}
           {daySessions.length > 0 && (
             <div className="premium-card overflow-hidden">
-              <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+              <div className="p-6 border-b border-[var(--border)]">
                 <h3 className="font-semibold">Sessions (Meditation/Breathing)</h3>
               </div>
               <div className="divide-y divide-slate-200/60 dark:divide-slate-800/40">
                 {daySessions.map((s) => (
                   <div
                     key={s.id}
-                    className="p-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between"
+                    className="p-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors flex items-center justify-between"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/30 flex items-center justify-center">
@@ -218,7 +218,7 @@ export default function WorkoutsPage() {
                         <p className="font-medium text-sm capitalize">
                           {s.type?.replace(/_/g, " ") || "Session"}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-gray-400">
                           {new Date(s.start_datetime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                         </p>
                       </div>
@@ -252,7 +252,7 @@ export default function WorkoutsPage() {
                 {dayTags.map((t) => (
                   <div
                     key={t.id}
-                    className="badge bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300"
+                    className="badge bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300"
                   >
                     <Tag className="w-3 h-3" />
                     {t.text || t.tag_type_code}
@@ -264,7 +264,7 @@ export default function WorkoutsPage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Trends</h3>
             <DateRangeSelector />
           </div>
 

@@ -13,7 +13,7 @@ const LoadingBar = memo(function LoadingBar() {
   if (!loading) return null;
   return (
     <div className="fixed top-0 left-0 right-0 z-50 h-[2px]">
-      <div className="h-full bg-oura-500 animate-loading-bar" />
+      <div className="h-full bg-gray-900 dark:bg-white animate-loading-bar" />
     </div>
   );
 });
@@ -63,10 +63,10 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   if (status === "loading") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-secondary)]">
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-primary)]">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-oura-50 dark:bg-oura-500/10 animate-pulse" />
-          <p className="text-sm text-slate-400">Loading...</p>
+          <div className="w-10 h-10 rounded-full border-2 border-gray-200 dark:border-gray-700 border-t-gray-900 dark:border-t-white animate-spin" />
+          <p className="text-sm text-gray-400">Loading...</p>
         </div>
       </div>
     );
@@ -75,13 +75,13 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   if (!session) return null;
 
   return (
-    <div className="min-h-screen bg-[var(--bg-secondary)]">
+    <div className="min-h-screen bg-[var(--bg-primary)]">
       <LoadingBar />
       <ConnectionStatus />
       <Sidebar />
       <main
         id="main-content"
-        className="lg:ml-64 p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 xl:p-10 transition-all duration-300"
+        className="lg:ml-64 p-4 pt-16 sm:p-6 sm:pt-16 lg:p-8 lg:pt-8 xl:p-10 transition-all duration-200"
       >
         <div className="max-w-[1400px] mx-auto">
           <ErrorBoundary>{children}</ErrorBoundary>

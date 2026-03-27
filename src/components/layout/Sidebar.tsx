@@ -77,14 +77,14 @@ export function Sidebar() {
   const sidebarContent = (
     <>
       {/* Logo */}
-      <div className="flex items-center gap-3 px-5 h-16 border-b border-slate-200/50 dark:border-slate-800/30">
-        <div className="w-9 h-9 rounded-xl bg-oura-50 dark:bg-oura-500/10 flex items-center justify-center flex-shrink-0">
-          <Sparkles className="w-5 h-5 text-oura-500 dark:text-oura-400" />
+      <div className="flex items-center gap-3 px-5 h-16 border-b border-[var(--border)]">
+        <div className="w-9 h-9 rounded-full bg-gray-900 dark:bg-white flex items-center justify-center flex-shrink-0">
+          <Sparkles className="w-4.5 h-4.5 text-white dark:text-gray-900" />
         </div>
         {!collapsed && (
           <div className="animate-fade-in">
             <h1 className="font-bold text-lg tracking-tight">Oura</h1>
-            <p className="text-[10px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-widest">
+            <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">
               Analytics
             </p>
           </div>
@@ -92,7 +92,7 @@ export function Sidebar() {
         {/* Mobile close button */}
         <button
           onClick={() => setMobileOpen(false)}
-          className="ml-auto p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 transition-colors lg:hidden"
+          className="ml-auto p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors lg:hidden"
           aria-label="Close menu"
         >
           <X className="w-5 h-5" />
@@ -122,7 +122,7 @@ export function Sidebar() {
           </Link>
         ))}
 
-        <div className="pt-4 mt-4 border-t border-slate-200/50 dark:border-slate-800/30">
+        <div className="pt-4 mt-4 border-t border-[var(--border)]">
           <Link
             href="/settings"
             className={cn(
@@ -140,7 +140,7 @@ export function Sidebar() {
       </nav>
 
       {/* Bottom section */}
-      <div className="px-3 py-4 space-y-3 border-t border-slate-200/50 dark:border-slate-800/30">
+      <div className="px-3 py-4 space-y-3 border-t border-[var(--border)]">
         {/* Theme toggle */}
         <button
           onClick={toggleTheme}
@@ -158,7 +158,7 @@ export function Sidebar() {
           {theme === "dark" ? (
             <Sun className="w-5 h-5 flex-shrink-0 text-amber-400" />
           ) : (
-            <Moon className="w-5 h-5 flex-shrink-0 text-slate-500" />
+            <Moon className="w-5 h-5 flex-shrink-0 text-gray-400" />
           )}
           {!collapsed && (
             <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
@@ -170,7 +170,7 @@ export function Sidebar() {
           <div
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-xl",
-              "bg-slate-50/80 dark:bg-white/[0.03] border border-slate-200/50 dark:border-slate-800/30",
+              "bg-gray-50 dark:bg-white/[0.03] border border-[var(--border)]",
               collapsed &&
                 "justify-center px-0 border-0 bg-transparent dark:bg-transparent"
             )}
@@ -181,10 +181,10 @@ export function Sidebar() {
                 alt={session.user.name || "User avatar"}
                 width={32}
                 height={32}
-                className="rounded-full ring-2 ring-white dark:ring-slate-800 flex-shrink-0"
+                className="rounded-full ring-2 ring-white dark:ring-gray-800 flex-shrink-0"
               />
             ) : (
-              <div className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-slate-800 flex-shrink-0 bg-oura-100 dark:bg-oura-900 flex items-center justify-center text-xs font-bold text-oura-600 dark:text-oura-400">
+              <div className="w-8 h-8 rounded-full ring-2 ring-white dark:ring-gray-800 flex-shrink-0 bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-xs font-bold text-gray-600 dark:text-gray-400">
                 {(session.user.name || "U")[0].toUpperCase()}
               </div>
             )}
@@ -193,7 +193,7 @@ export function Sidebar() {
                 <p className="text-sm font-medium truncate">
                   {session.user.name}
                 </p>
-                <p className="text-[11px] text-slate-400 truncate">
+                <p className="text-[11px] text-gray-400 truncate">
                   {session.user.email}
                 </p>
               </div>
@@ -229,7 +229,7 @@ export function Sidebar() {
       </div>
 
       {/* Status bar */}
-      <div className="border-t border-slate-200/50 dark:border-slate-800/30">
+      <div className="border-t border-[var(--border)]">
         <StatusBar collapsed={collapsed} />
       </div>
     </>
@@ -240,7 +240,7 @@ export function Sidebar() {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-white/90 dark:bg-[#1c1c24]/90 backdrop-blur-lg border border-black/[0.04] dark:border-white/[0.06] shadow-card lg:hidden"
+        className="fixed top-4 left-4 z-50 p-2.5 rounded-full bg-white dark:bg-[#1c1c24] border border-[var(--border)] lg:hidden"
         aria-label="Open navigation menu"
       >
         <Menu className="w-5 h-5" />
@@ -249,7 +249,7 @@ export function Sidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
           onClick={() => setMobileOpen(false)}
           aria-hidden="true"
         />
@@ -259,9 +259,9 @@ export function Sidebar() {
       <aside
         className={cn(
           "fixed left-0 top-0 h-screen z-50 flex flex-col",
-          "bg-white/90 dark:bg-[#0d0d14]/90 backdrop-blur-2xl",
-          "border-r border-slate-200/50 dark:border-slate-800/30",
-          "transition-all duration-200 ease-[cubic-bezier(0.2,0,0,1)]",
+          "bg-white dark:bg-[#0d0d14]",
+          "border-r border-[var(--border)]",
+          "transition-all duration-200 ease-out",
           // Mobile: slide in/out
           "max-lg:-translate-x-full max-lg:w-64",
           mobileOpen && "max-lg:translate-x-0",

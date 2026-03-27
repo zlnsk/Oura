@@ -32,11 +32,11 @@ export const DualIntradayChart = memo(function DualIntradayChart({
     return (
       <div className="premium-card p-6">
         {title && (
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400 mb-4">
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-4">
             {title}
           </h3>
         )}
-        <div className="flex items-center justify-center h-[120px] text-sm text-slate-400 dark:text-slate-500">
+        <div className="flex items-center justify-center h-[120px] text-sm text-gray-400 dark:text-gray-500">
           No data available
         </div>
       </div>
@@ -54,10 +54,10 @@ export const DualIntradayChart = memo(function DualIntradayChart({
     <div className="premium-card p-6">
       {title && (
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-sm font-medium text-slate-600 dark:text-slate-400">
+          <h3 className="text-sm font-medium text-gray-600 dark:text-gray-400">
             {title}
           </h3>
-          <div className="flex items-center gap-4 text-xs text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
             {avgHR !== null && (
               <span>Avg HR: <span className="font-medium text-rose-500">{avgHR} bpm</span></span>
             )}
@@ -101,11 +101,11 @@ export const DualIntradayChart = memo(function DualIntradayChart({
           <Tooltip
             contentStyle={{
               backgroundColor: isDark ? "#1a1a24" : "#ffffff",
-              border: `1px solid ${isDark ? "rgba(255,255,255,0.05)" : "#f1f5f9"}`,
-              borderRadius: "16px",
+              border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "#e5e7eb"}`,
+              borderRadius: "12px",
               boxShadow: isDark
-                ? "0 4px 16px rgba(0,0,0,0.3)"
-                : "0 4px 16px rgba(0,0,0,0.08)",
+                ? "none"
+                : "none",
               padding: "10px 14px",
               fontSize: 12,
             }}

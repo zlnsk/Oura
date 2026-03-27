@@ -265,14 +265,14 @@ export default function SettingsPage() {
       <div className="max-w-2xl space-y-6">
         {/* Oura API Key Configuration */}
         <div className="premium-card overflow-hidden">
-          <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+          <div className="p-6 border-b border-[var(--border)]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-oura-500 to-oura-600 flex items-center justify-center shadow-lg shadow-oura-500/20">
-                <Key className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center">
+                <Key className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
                 <h3 className="font-semibold">Oura API Key</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Your API key is stored securely in a server-side HTTP-only cookie
                 </p>
               </div>
@@ -295,7 +295,7 @@ export default function SettingsPage() {
                 />
                 <button
                   onClick={() => setShowKey(!showKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Toggle API key visibility"
                 >
                   {showKey ? (
@@ -305,7 +305,7 @@ export default function SettingsPage() {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                 Get your token from{" "}
                 <a
                   href="https://cloud.ouraring.com/personal-access-tokens"
@@ -325,7 +325,7 @@ export default function SettingsPage() {
               </button>
               <button onClick={handleTest} className="btn-secondary text-sm" disabled={testStatus === "testing"}>
                 {testStatus === "testing" ? (
-                  <div className="w-4 h-4 border-2 border-slate-400 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
                 ) : (
                   <Shield className="w-4 h-4" />
                 )}
@@ -369,14 +369,14 @@ export default function SettingsPage() {
 
         {/* AI API Key Configuration */}
         <div className="premium-card overflow-hidden">
-          <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+          <div className="p-6 border-b border-[var(--border)]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-violet-500/20">
-                <Brain className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center">
+                <Brain className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
                 <h3 className="font-semibold">AI API Key</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Bring your own Anthropic API key for AI-powered health insights
                 </p>
               </div>
@@ -399,7 +399,7 @@ export default function SettingsPage() {
                 />
                 <button
                   onClick={() => setShowAiKey(!showAiKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Toggle AI key visibility"
                 >
                   {showAiKey ? (
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                   )}
                 </button>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                 Get your API key from{" "}
                 <a
                   href="https://console.anthropic.com/settings/keys"
@@ -459,14 +459,14 @@ export default function SettingsPage() {
 
         {/* Withings API Key Configuration */}
         <div className="premium-card overflow-hidden">
-          <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+          <div className="p-6 border-b border-[var(--border)]">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
-                <Scale className="w-5 h-5 text-white" />
+              <div className="w-10 h-10 rounded-full bg-gray-100 dark:bg-white/5 border border-[var(--border)] flex items-center justify-center">
+                <Scale className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               </div>
               <div>
                 <h3 className="font-semibold">Withings API Key</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Connect your Withings smart scale for weight and body composition data
                 </p>
               </div>
@@ -489,13 +489,13 @@ export default function SettingsPage() {
                 />
                 <button
                   onClick={() => setShowWithingsKey(!showWithingsKey)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                   aria-label="Toggle Withings key visibility"
                 >
                   {showWithingsKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
                 Get your access token from the Withings developer portal
               </p>
             </div>
@@ -536,10 +536,10 @@ export default function SettingsPage() {
         {/* Security info */}
         <div className="premium-card p-6">
           <div className="flex items-start gap-3">
-            <Shield className="w-5 h-5 text-slate-400 mt-0.5 flex-shrink-0" />
+            <Shield className="w-5 h-5 text-gray-400 mt-0.5 flex-shrink-0" />
             <div>
               <h3 className="font-semibold text-sm">Security & Privacy</h3>
-              <ul className="mt-2 space-y-1.5 text-xs text-slate-500 dark:text-slate-400">
+              <ul className="mt-2 space-y-1.5 text-xs text-gray-500 dark:text-gray-400">
                 <li>&#8226; All API keys are stored as secure, HTTP-only browser cookies</li>
                 <li>&#8226; Keys are never stored on the server or in any database</li>
                 <li>&#8226; Each user&apos;s data is fully isolated &mdash; no one else can see your data</li>

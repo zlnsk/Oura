@@ -106,7 +106,7 @@ export default function SleepPage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="rounded-full p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -163,7 +163,7 @@ export default function SleepPage() {
                     </div>
                   </>
                 ) : (
-                  <div className="col-span-2 text-sm text-slate-400">No sleep data for this date</div>
+                  <div className="col-span-2 text-sm text-gray-400">No sleep data for this date</div>
                 )}
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function SleepPage() {
           {/* Naps for selected day */}
           {naps.filter((n) => n.day === selectedDate).length > 0 && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
                 Naps
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -181,10 +181,10 @@ export default function SleepPage() {
                   .map((nap) => (
                     <div
                       key={nap.id}
-                      className="p-4 rounded-xl bg-slate-50 dark:bg-white/5 space-y-1"
+                      className="p-4 rounded-xl bg-gray-50 dark:bg-white/5 space-y-1"
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs text-slate-500 dark:text-slate-400">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(nap.bedtime_start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
                           {" — "}
                           {new Date(nap.bedtime_end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })}
@@ -193,7 +193,7 @@ export default function SleepPage() {
                           {formatDuration(nap.total_sleep_duration)}
                         </span>
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400">
+                      <div className="flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
                         <span>Deep: {formatDuration(nap.deep_sleep_duration)}</span>
                         <span>REM: {formatDuration(nap.rem_sleep_duration)}</span>
                         <span>Light: {formatDuration(nap.light_sleep_duration)}</span>
@@ -207,7 +207,7 @@ export default function SleepPage() {
           {/* Nap trends (period-wide) */}
           {naps.length > 0 && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-3">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
                 Nap Summary
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
@@ -263,7 +263,7 @@ export default function SleepPage() {
 
           {/* Period averages */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h2>
+            <h2 className="text-sm font-medium text-gray-500 dark:text-gray-400">Trends</h2>
             <DateRangeSelector />
           </div>
 
@@ -350,7 +350,7 @@ export default function SleepPage() {
           {/* Sleep contributors */}
           {selectedDailySleep?.contributors && (
             <div className="premium-card p-6">
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-4">
+              <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-4">
                 Sleep Score Contributors
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
@@ -363,7 +363,7 @@ export default function SleepPage() {
                         strokeWidth={5}
                         className="mx-auto"
                       />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-2 capitalize">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-2 capitalize">
                         {key.replace(/_/g, " ")}
                       </p>
                     </div>

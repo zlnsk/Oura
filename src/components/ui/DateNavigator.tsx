@@ -95,10 +95,10 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
   return (
     <div className="flex items-center gap-2">
       {/* Prev/Next arrows with date */}
-      <div className="flex items-center gap-1 p-1 bg-slate-100 dark:bg-white/5 rounded-full">
+      <div className="flex items-center gap-0.5 p-1 border border-[var(--border)] rounded-full">
         <button
           onClick={() => onDateChange(shiftDate(selectedDate, granularity, -1))}
-          className="p-1.5 rounded-full text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-white/10 transition-all"
+          className="p-1.5 rounded-full text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-all"
           title={`Previous ${granularity}`}
           aria-label={`Previous ${granularity}`}
         >
@@ -109,8 +109,8 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
           className={cn(
             "px-3 py-1 text-xs font-semibold rounded-full min-w-[100px] text-center transition-all",
             isToday
-              ? "text-slate-900 dark:text-white"
-              : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white cursor-pointer"
+              ? "text-gray-900 dark:text-white"
+              : "text-gray-500 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white cursor-pointer"
           )}
           title="Click to go to today"
           aria-label="Click to go to today"
@@ -123,8 +123,8 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
           className={cn(
             "p-1.5 rounded-full transition-all",
             isToday
-              ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
-              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-white hover:bg-white dark:hover:bg-white/10"
+              ? "text-gray-300 dark:text-gray-600 cursor-not-allowed"
+              : "text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5"
           )}
           title={`Next ${granularity}`}
           aria-label={`Next ${granularity}`}
@@ -134,16 +134,16 @@ export function DateNavigator({ selectedDate, onDateChange }: DateNavigatorProps
       </div>
 
       {/* Granularity selector */}
-      <div className="flex items-center gap-0.5 p-1 bg-slate-100 dark:bg-white/5 rounded-full">
+      <div className="flex items-center gap-0.5 p-1 border border-[var(--border)] rounded-full">
         {granularities.map(({ label, value }) => (
           <button
             key={value}
             onClick={() => handleGranularityChange(value)}
             className={cn(
-              "px-2 py-1 text-[10px] font-bold rounded-full transition-all duration-200 uppercase",
+              "px-2.5 py-1 text-[10px] font-bold rounded-full transition-all duration-150 uppercase",
               granularity === value
-                ? "bg-white dark:bg-white/10 text-slate-900 dark:text-white shadow-sm"
-                : "text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
+                ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900"
+                : "text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300"
             )}
           >
             {label}

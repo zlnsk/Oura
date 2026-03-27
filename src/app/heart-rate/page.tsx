@@ -85,7 +85,7 @@ export default function HeartRatePage() {
             <button
               onClick={fetchData}
               disabled={loading}
-              className="rounded-full p-2 bg-transparent hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+              className="rounded-full p-2 bg-transparent hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
             </button>
@@ -139,7 +139,7 @@ export default function HeartRatePage() {
 
           {/* Trends */}
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400">Trends</h3>
+            <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Trends</h3>
             <DateRangeSelector />
           </div>
 
