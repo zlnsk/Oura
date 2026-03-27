@@ -25,6 +25,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
+import { StatusBar } from "@/components/ui/StatusBar";
 
 const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Today" },
@@ -223,6 +224,11 @@ export function Sidebar() {
             <ChevronLeft className="w-5 h-5" />
           )}
         </button>
+      </div>
+
+      {/* Status bar */}
+      <div className="border-t border-slate-200/50 dark:border-slate-800/30">
+        <StatusBar collapsed={collapsed} />
       </div>
     </>
   );

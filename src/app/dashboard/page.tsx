@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { average, trend, formatDuration } from "@/lib/utils";
 import { AISummaryCard } from "@/components/ui/AISummaryCard";
+import { OnboardingGuard } from "@/components/ui/OnboardingGuard";
 import { COLORS } from "@/lib/constants";
 import type { SleepPeriod, DailySleep, DailyActivity, DailyReadiness } from "@/types/oura";
 
@@ -451,6 +452,7 @@ export default function DashboardPage() {
 
   return (
     <DashboardShell>
+      <OnboardingGuard>
       <PageHeader
         title="Daily View"
         subtitle={new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
@@ -589,6 +591,7 @@ export default function DashboardPage() {
 
         </div>
       )}
+      </OnboardingGuard>
     </DashboardShell>
   );
 }
