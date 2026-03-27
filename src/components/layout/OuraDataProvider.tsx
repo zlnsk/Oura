@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, useEffect, useRef } from "react";
 import type { DashboardData } from "@/types/oura";
-import { CACHE_KEY, STALE_MS } from "@/lib/constants";
+import { BASE_PATH, CACHE_KEY, STALE_MS } from "@/lib/constants";
 
 interface CacheEntry {
   data: DashboardData;
@@ -127,7 +127,7 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/oura/all?days=${days}`);
+      const res = await fetch(`${BASE_PATH}/api/oura/all?days=${days}`);
       if (!res.ok) {
         const json = await res.json();
         throw new Error(json.error || "Failed to fetch data");

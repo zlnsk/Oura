@@ -5,7 +5,7 @@ const allowedEmails = process.env.ALLOWED_EMAILS
   ? process.env.ALLOWED_EMAILS.split(",").map((e) => e.trim().toLowerCase())
   : [];
 
-const useSecureCookies = process.env.NEXTAUTH_URL?.startsWith("https://");
+const useSecureCookies = (process.env.NEXTAUTH_URL ?? "").startsWith("https");
 const cookiePrefix = useSecureCookies ? "__Secure-" : "";
 
 export const authOptions: NextAuthOptions = {
@@ -17,15 +17,21 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async signIn({ profile }) {
+      // If ALLOWED_EMAILS is set, restrict to those emails only
       if (allowedEmails.length > 0) {
         const email = profile?.email?.toLowerCase();
         return !!email && allowedEmails.includes(email);
       }
+      // Otherwise open to all Google accounts (personal deployment)
       return true;
     },
     async session({ session }) {
       return session;
     },
+  },
+  pages: {
+    signIn: "https://apps.lukasz.com/Oura",
+    error: "https://apps.lukasz.com/Oura",
   },
   cookies: {
     sessionToken: {
@@ -37,25 +43,21 @@ export const authOptions: NextAuthOptions = {
       options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
     },
     csrfToken: {
-      name: "next-auth.csrf-token",
+      name: `${cookiePrefix}next-auth.csrf-token`,
       options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
     },
     pkceCodeVerifier: {
       name: `${cookiePrefix}next-auth.pkce.code_verifier`,
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies, maxAge: 900 },
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
     },
     state: {
       name: `${cookiePrefix}next-auth.state`,
-      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies, maxAge: 900 },
+      options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
     },
     nonce: {
       name: `${cookiePrefix}next-auth.nonce`,
       options: { httpOnly: true, sameSite: "lax", path: "/", secure: useSecureCookies },
     },
-  },
-  pages: {
-    signIn: "https://apps.lukasz.com/Oura",
-    error: "https://apps.lukasz.com/Oura",
   },
   secret: process.env.NEXTAUTH_SECRET,
 };
