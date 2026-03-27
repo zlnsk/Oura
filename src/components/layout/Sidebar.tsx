@@ -15,6 +15,7 @@ import {
   Zap,
   Brain,
   Dumbbell,
+  Scale,
   Settings,
   LogOut,
   Sparkles,
@@ -35,6 +36,7 @@ const navItems = [
   { href: "/heart-rate", icon: Heart, label: "Heart Rate" },
   { href: "/stress", icon: Brain, label: "Stress" },
   { href: "/workouts", icon: Dumbbell, label: "Workouts" },
+  { href: "/weight", icon: Scale, label: "Weight" },
 ];
 
 export function Sidebar() {

@@ -36,7 +36,7 @@ Built with modern web technologies for speed and reliability:
 - **Recharts** — Beautiful, interactive data visualizations
 - **Tailwind CSS** — Clean, responsive design with dark mode
 - **Claude AI** — Intelligent health summaries powered by Anthropic
-- **Vercel** — Production deployment with edge performance
+- **Docker** — Self-hosted deployment
 
 ## Getting Started
 
@@ -84,6 +84,10 @@ Your data stays yours:
 ## Disclaimer
 
 Oura Analytics is a personal data exploration tool — not a medical device. The insights, charts, and AI-generated summaries are intended for informational and educational purposes only. **Always consult with your doctor or a qualified healthcare professional before making any decisions based on your health data.** This tool does not diagnose, treat, or prevent any medical condition.
+
+## Contributing
+
+Contributions are welcome! If you have ideas for new visualizations, better analytics, or UX improvements, feel free to open an issue or submit a pull request.
 
 ## License
 

@@ -57,6 +57,7 @@ const defaultData: DashboardData = {
   vo2Max: [],
   sleepTime: [],
   tags: [],
+  weight: [],
   personalInfo: null,
 };
 
@@ -127,13 +128,30 @@ export function OuraDataProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${BASE_PATH}/api/oura/all?days=${days}`);
-      if (!res.ok) {
-        const json = await res.json();
+      // Fetch Oura and Withings data in parallel
+      const [ouraRes, withingsRes] = await Promise.all([
+        fetch(`${BASE_PATH}/api/oura/all?days=${days}`),
+        fetch(`${BASE_PATH}/api/withings?days=${days}`).catch(() => null),
+      ]);
+
+      if (!ouraRes.ok) {
+        const json = await ouraRes.json();
         throw new Error(json.error || "Failed to fetch data");
       }
-      const json = await res.json();
-      const merged = { ...defaultData, ...json };
+      const json = await ouraRes.json();
+
+      // Merge Withings weight data if available
+      let weight: unknown[] = [];
+      if (withingsRes && withingsRes.ok) {
+        try {
+          const withingsJson = await withingsRes.json();
+          weight = withingsJson.weight || [];
+        } catch {
+          // Withings data unavailable — continue without it
+        }
+      }
+
+      const merged = { ...defaultData, ...json, weight };
       setData(merged);
       writeCache(merged, days);
       setLastUpdated(Date.now());

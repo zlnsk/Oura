@@ -15,6 +15,7 @@ import {
   Shield,
   Trash2,
   Brain,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BASE_PATH } from "@/lib/constants";
@@ -31,6 +32,14 @@ export default function SettingsPage() {
   const [hasKey, setHasKey] = useState(false);
   const [testStatus, setTestStatus] = useState<"idle" | "testing" | "success" | "error">("idle");
   const [testMessage, setTestMessage] = useState("");
+
+  // Withings API key state
+  const [withingsKey, setWithingsKey] = useState("");
+  const [showWithingsKey, setShowWithingsKey] = useState(false);
+  const [withingsSaved, setWithingsSaved] = useState(false);
+  const [hasWithingsKey, setHasWithingsKey] = useState(false);
+  const [withingsStatus, setWithingsStatus] = useState<"idle" | "saving" | "success" | "error">("idle");
+  const [withingsMessage, setWithingsMessage] = useState("");
 
   // AI API key state
   const [aiKey, setAiKey] = useState("");
@@ -52,6 +61,13 @@ export default function SettingsPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.hasKey) setHasAiKey(true);
+      })
+      .catch(() => {});
+
+    fetch(`${BASE_PATH}/api/settings/withings-token`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.hasToken) setHasWithingsKey(true);
       })
       .catch(() => {});
   }, []);
@@ -186,6 +202,55 @@ export default function SettingsPage() {
     setAiSaved(false);
     setAiStatus("idle");
     toast("AI API key removed", "info");
+  };
+
+  // Withings key handlers
+  const handleSaveWithings = async () => {
+    const trimmed = withingsKey.trim();
+    if (!trimmed) return;
+    if (trimmed.length < 10) {
+      setWithingsStatus("error");
+      setWithingsMessage("Invalid token. Token must be at least 10 characters.");
+      return;
+    }
+    setWithingsStatus("saving");
+    try {
+      const res = await fetch(`${BASE_PATH}/api/settings/withings-token`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token: trimmed }),
+      });
+      if (res.ok) {
+        setHasWithingsKey(true);
+        setWithingsSaved(true);
+        setWithingsStatus("success");
+        setWithingsMessage("Withings token saved successfully.");
+        toast("Withings token saved securely", "success");
+        setTimeout(() => {
+          setWithingsSaved(false);
+          setWithingsStatus("idle");
+        }, 3000);
+      } else {
+        const data = await res.json();
+        setWithingsStatus("error");
+        setWithingsMessage(data.error || "Failed to save token");
+      }
+    } catch {
+      setWithingsStatus("error");
+      setWithingsMessage("Network error. Please try again.");
+    }
+  };
+
+  const handleDeleteWithings = async () => {
+    if (!confirm("Remove your Withings API key?")) return;
+    try {
+      await fetch(`${BASE_PATH}/api/settings/withings-token`, { method: "DELETE" });
+    } catch {}
+    setWithingsKey("");
+    setHasWithingsKey(false);
+    setWithingsSaved(false);
+    setWithingsStatus("idle");
+    toast("Withings token removed", "info");
   };
 
   return (
@@ -387,6 +452,82 @@ export default function SettingsPage() {
                   <AlertCircle className="w-5 h-5 flex-shrink-0" />
                 )}
                 {aiMessage}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Withings API Key Configuration */}
+        <div className="premium-card overflow-hidden">
+          <div className="p-6 border-b border-slate-200/60 dark:border-slate-800/40">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center shadow-lg shadow-teal-500/20">
+                <Scale className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h3 className="font-semibold">Withings API Key</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  Connect your Withings smart scale for weight and body composition data
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 space-y-4">
+            <div>
+              <label htmlFor="withings-api-key" className="block text-sm font-medium mb-2">
+                Withings Access Token
+              </label>
+              <div className="relative">
+                <input
+                  id="withings-api-key"
+                  type={showWithingsKey ? "text" : "password"}
+                  value={withingsKey}
+                  onChange={(e) => setWithingsKey(e.target.value)}
+                  placeholder={hasWithingsKey ? "Token saved (enter new value to update)" : "Paste your Withings access token here..."}
+                  className="input-field pr-12"
+                />
+                <button
+                  onClick={() => setShowWithingsKey(!showWithingsKey)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+                  aria-label="Toggle Withings key visibility"
+                >
+                  {showWithingsKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+              <p className="text-xs text-slate-400 dark:text-slate-500 mt-2">
+                Get your access token from the Withings developer portal
+              </p>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button onClick={handleSaveWithings} className="btn-primary text-sm">
+                <Save className="w-4 h-4" />
+                {withingsSaved ? "Saved!" : "Save Key"}
+              </button>
+              {hasWithingsKey && (
+                <button onClick={handleDeleteWithings} className="btn-secondary text-sm text-rose-500 hover:text-rose-600">
+                  <Trash2 className="w-4 h-4" />
+                  Remove
+                </button>
+              )}
+            </div>
+
+            {withingsStatus !== "idle" && withingsStatus !== "saving" && (
+              <div
+                className={cn(
+                  "p-4 rounded-xl border text-sm flex items-center gap-3",
+                  withingsStatus === "success"
+                    ? "bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-800/40 text-emerald-700 dark:text-emerald-400"
+                    : "bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-800/40 text-rose-700 dark:text-rose-400"
+                )}
+              >
+                {withingsStatus === "success" ? (
+                  <CheckCircle2 className="w-5 h-5 flex-shrink-0" />
+                ) : (
+                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                )}
+                {withingsMessage}
               </div>
             )}
           </div>

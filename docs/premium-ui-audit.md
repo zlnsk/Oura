@@ -135,7 +135,7 @@ All animations are disabled when `prefers-reduced-motion: reduce` is active:
 
 ## 6. Security & Rate-Limit Hardening
 
-### HTTP Security Headers (vercel.json)
+### HTTP Security Headers (next.config.js)
 
 | Header | Value | Purpose |
 |--------|-------|---------|
@@ -145,7 +145,7 @@ All animations are disabled when `prefers-reduced-motion: reduce` is active:
 | `Permissions-Policy` | `camera=(), microphone=(), geolocation=(), interest-cohort=()` | Disable unused APIs |
 | `X-Frame-Options` | `DENY` | Prevent clickjacking |
 | `X-DNS-Prefetch-Control` | `on` | Faster DNS resolution |
-| `Content-Security-Policy` | See vercel.json | Restrict resource origins |
+| `Content-Security-Policy` | See next.config.js | Restrict resource origins |
 
 ### API Rate Limiting
 

@@ -5,7 +5,7 @@ import { Sparkles, RefreshCw, Zap } from "lucide-react";
 import type { DashboardData } from "@/types/oura";
 import { BASE_PATH } from "@/lib/constants";
 
-export type PageType = "dashboard" | "sleep" | "activity" | "readiness" | "heart-rate" | "stress" | "workouts";
+export type PageType = "dashboard" | "sleep" | "activity" | "readiness" | "heart-rate" | "stress" | "workouts" | "weight";
 
 interface AISummary {
   overall: string;

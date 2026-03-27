@@ -20,6 +20,7 @@ export const STALE_MS = 15 * 60 * 1000; // 15 minutes
 export const COOKIE_MAX_AGE = 90 * 24 * 60 * 60; // 90 days (seconds)
 export const OURA_COOKIE_NAME = "oura_api_key";
 export const AI_KEY_COOKIE_NAME = "anthropic_api_key";
+export const WITHINGS_COOKIE_NAME = "withings_api_key";
 
 // Rate limits
 export const AI_DAILY_LIMIT = parseInt(process.env.AI_SUMMARY_DAILY_LIMIT || "20", 10);
@@ -40,6 +41,7 @@ export const ALLOWED_AI_PAGES = [
   "heart-rate",
   "stress",
   "workouts",
+  "weight",
 ] as const;
 
 // Design tokens – centralized color palette for chart/stat components
@@ -59,6 +61,7 @@ export const COLORS = {
   steps: "#10b981",
   calories: "#f97316", // orange-500
   spo2: "#06b6d4", // cyan-500
+  weight: "#14b8a6", // teal-500
   brand: "#0c93e9", // oura blue
 
   // Sleep stages
