@@ -29,7 +29,7 @@ export default function LoginPage() {
       {/* Theme toggle */}
       <button
         onClick={toggleTheme}
-        className="absolute top-6 right-6 z-10 p-3 rounded-full bg-gray-50 dark:bg-white/5 border border-[var(--border)] hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
+        className="absolute top-6 right-6 z-20 p-3 rounded-full bg-gray-50 dark:bg-white/5 border border-[var(--border)] hover:bg-gray-100 dark:hover:bg-white/10 transition-all"
       >
         {theme === "dark" ? (
           <Sun className="w-5 h-5 text-amber-400" />
