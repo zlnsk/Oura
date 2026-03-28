@@ -21,8 +21,9 @@ export async function GET() {
     );
   }
 
-  // Build the callback URL from NEXTAUTH_URL (which includes the base path)
-  const baseUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}`;
+  // Build the callback URL from the origin + BASE_PATH (NEXTAUTH_URL includes /api/auth suffix)
+  const nextAuthUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}/api/auth`;
+  const baseUrl = nextAuthUrl.replace(/\/api\/auth$/, "");
   const redirectUri = `${baseUrl}/api/withings/callback`;
 
   // Generate a CSRF state token

@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
   }
 
   // Exchange authorization code for tokens
-  const baseUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}`;
+  const nextAuthUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}/api/auth`;
+  const baseUrl = nextAuthUrl.replace(/\/api\/auth$/, "");
   const redirectUri = `${baseUrl}/api/withings/callback`;
 
   try {
