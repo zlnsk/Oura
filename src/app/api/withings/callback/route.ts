@@ -14,7 +14,9 @@ import {
 export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
   if (!session) {
-    return NextResponse.redirect(new URL(BASE_PATH, req.url));
+    const nextAuthUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}/api/auth`;
+    const publicBase = nextAuthUrl.replace(/\/api\/auth$/, "");
+    return NextResponse.redirect(new URL(publicBase));
   }
 
   const searchParams = req.nextUrl.searchParams;
@@ -98,7 +100,9 @@ export async function GET(req: NextRequest) {
 }
 
 function redirectToSettings(req: NextRequest, status: string): NextResponse {
-  const settingsUrl = new URL(`${BASE_PATH}/settings`, req.url);
+  const nextAuthUrl = process.env.NEXTAUTH_URL || `https://localhost:3000${BASE_PATH}/api/auth`;
+  const publicBase = nextAuthUrl.replace(/\/api\/auth$/, "");
+  const settingsUrl = new URL(`${publicBase}/settings`);
   settingsUrl.searchParams.set("withings", status);
   return NextResponse.redirect(settingsUrl);
 }
