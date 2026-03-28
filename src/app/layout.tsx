@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/layout/Providers";
@@ -9,11 +9,24 @@ const roboto = Roboto({
   variable: "--font-roboto",
 });
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#111116",
+};
+
 export const metadata: Metadata = {
   title: "Oura Analytics | Premium Health Dashboard",
   description: "Comprehensive Oura Ring data analytics and AI-powered insights",
-  icons: { icon: "/favicon.ico" },
+  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  manifest: "/Oura/manifest.json",
   metadataBase: new URL(process.env.NEXTAUTH_URL || "http://localhost:3000"),
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Oura",
+  },
   openGraph: {
     title: "Oura Analytics",
     description: "Premium health insights powered by your Oura Ring data and AI",
