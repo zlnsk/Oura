@@ -195,13 +195,24 @@ export async function fetchAllOuraData(token: string, days: number = 30) {
     })
   );
 
+  const errors: string[] = [];
   for (let i = 0; i < settled.length; i++) {
     const result = settled[i];
     if (result.status === "fulfilled") {
       results[result.value.key] = result.value.data;
     } else {
       results[endpoints[i].key] = [];
+      errors.push(result.reason instanceof Error ? result.reason.message : String(result.reason));
     }
+  }
+
+  // If every endpoint failed, surface the error instead of returning empty data
+  if (errors.length === endpoints.length) {
+    const hasAuthError = errors.some((e) => e.includes("401"));
+    if (hasAuthError) {
+      throw new Error("Oura API authentication failed. Please check your API key in Settings.");
+    }
+    throw new Error("Failed to fetch data from Oura. All endpoints returned errors.");
   }
 
   let personalInfo = null;

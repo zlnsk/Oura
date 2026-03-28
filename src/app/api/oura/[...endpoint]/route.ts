@@ -73,13 +73,16 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Oura API error:", error instanceof Error ? error.message : "Unknown");
+    const message = error instanceof Error ? error.message : "Unknown error";
+    console.error("Oura API error:", message);
+    const isAuthError = message.includes("authentication failed");
     return NextResponse.json(
       {
-        error:
-          "Failed to fetch data from Oura. Please check your API key and try again.",
+        error: isAuthError
+          ? message
+          : "Failed to fetch data from Oura. Please check your API key and try again.",
       },
-      { status: 500 }
+      { status: isAuthError ? 401 : 500 }
     );
   }
 }
